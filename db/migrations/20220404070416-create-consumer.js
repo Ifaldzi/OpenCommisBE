@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('illustrators', {
+    await queryInterface.createTable('consumers', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -9,36 +9,25 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
-        type: Sequelize.STRING(50),
-        allowNull: false
+        allowNull: false,
+        type: Sequelize.STRING(50)
       },
       email: {
-        type: Sequelize.STRING(100),
-        allowNull: false
+        allowNull: false,
+        type: Sequelize.STRING(100)
       },
       username: {
-        type: Sequelize.STRING(25),
         allowNull: false,
-        unique: true
+        type: Sequelize.STRING(25),
+        unique: true,
       },
       password: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      balance: {
-        type: Sequelize.DOUBLE,
-        default: 0,
+        type: Sequelize.STRING(50),
         allowNull: false
       },
       phone: {
         type: Sequelize.STRING(15),
         allowNull: false
-      },
-      profile_picture: {
-        type: Sequelize.STRING
-      },
-      available: {
-        type: Sequelize.BOOLEAN
       },
       activation_token: {
         type: Sequelize.STRING
@@ -58,6 +47,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('illustrators');
+    await queryInterface.dropTable('consumers');
   }
 };
