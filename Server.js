@@ -3,6 +3,7 @@ const {sequelize} = require('./models')
 const config = require('./config/config')
 
 const authRoute = require('./routes/auth')
+const commissionRoute = require('./routes/commission')
 const notFound = require('./middlewares/notFound')
 
 class Server {
@@ -15,6 +16,7 @@ class Server {
 
         this.#app.use(express.json())
         this.#app.use('/api/auth', authRoute)
+        this.#app.use('/api/commissions', commissionRoute)
 
         this.#app.use(notFound)
     }

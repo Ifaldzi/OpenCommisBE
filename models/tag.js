@@ -9,9 +9,9 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({Category}) {
+    static associate({CommissionPost}) {
       // define association here
-      this.belongsToMany(Category, {through: 'commission_tags'})
+      this.belongsToMany(CommissionPost, {through: 'commission_tags', timestamps: false})
     }
   }
   Tag.init({
@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Tag',
     underscored: true,
+    timestamps: false
   });
   return Tag;
 };

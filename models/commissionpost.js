@@ -13,15 +13,33 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(Illustrator, {as: 'illustrator'})
       this.belongsTo(Category, {as: 'category'})
-      this.belongsToMany(Tag, {through: 'commission_tags'})
+      this.belongsToMany(Tag, {
+        through: 'commission_tags', 
+        foreignKey: 'commission_post_id', 
+        as: 'tags', 
+        timestamps: false
+      })
+    }
+
+    toJSON() {
+      return {
+        ...this.get(), 
+        category: this.category.categoryName,
+        tags: this.get().tags.map((tag) => tag.tagName),
+        illustrator: this.get().illustrator !== undefined ? {
+          id: this.get().illustrator.id,
+          name: this.get().illustrator.name,
+          username: this.get().illustrator.username
+        } : undefined
+      }
     }
   }
   CommissionPost.init({
-    tittle: {
+    title: {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    duration_time: {
+    durationTime: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
@@ -58,6 +76,11 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'CommissionPost',
     underscored: true,
+    defaultScope: {
+      attributes: {
+        exclude: ['illustratorId', 'categoryId', 'CategoryId', 'IllustratorId']
+      }
+    }
   });
   return CommissionPost;
 };
