@@ -11,7 +11,7 @@ module.exports = {
       status: {
         type: Sequelize.STRING(10),
         allowNull: false,
-        default: "CREATED"
+        defaultValue: "CREATED"
       },
       grand_total: {
         type: Sequelize.DOUBLE,
