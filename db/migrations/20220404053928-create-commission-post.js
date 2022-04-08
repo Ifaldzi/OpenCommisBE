@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      tittle: {
+      title: {
         allowNull: false,
         type: Sequelize.STRING(50)
       },
@@ -20,13 +20,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DOUBLE
       },
-      desctiption: {
+      description: {
         allowNull: false,
         type: Sequelize.TEXT
       },
       status: {
         allowNull: false,
-        default: "OPEN",
+        defaultValue: "OPEN",
         type: Sequelize.STRING(6)
       },
       image_1: {

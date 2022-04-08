@@ -27,7 +27,7 @@ module.exports = {
       },
       balance: {
         type: Sequelize.DOUBLE,
-        default: 0,
+        defaultValue: 0,
         allowNull: false
       },
       phone: {
@@ -45,7 +45,7 @@ module.exports = {
       },
       email_verified: {
         type: Sequelize.BOOLEAN,
-        default: false
+        defaultValue: false
       },
       created_at: {
         allowNull: false,

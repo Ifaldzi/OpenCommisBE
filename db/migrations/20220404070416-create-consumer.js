@@ -34,7 +34,7 @@ module.exports = {
       },
       email_verified: {
         type: Sequelize.BOOLEAN,
-        default: false
+        defaultValue: false
       },
       created_at: {
         allowNull: false,
