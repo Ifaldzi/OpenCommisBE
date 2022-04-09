@@ -5,6 +5,7 @@ const config = require('./config/config')
 const authRoute = require('./routes/auth')
 const commissionRoute = require('./routes/commission')
 const notFound = require('./middlewares/notFound')
+const errorHandler = require('./middlewares/errorHandler')
 
 class Server {
     #app
@@ -19,6 +20,7 @@ class Server {
         this.#app.use('/api/commissions', commissionRoute)
 
         this.#app.use(notFound)
+        this.#app.use(errorHandler)
     }
 
     run() {
