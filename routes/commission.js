@@ -8,6 +8,8 @@ const router = Router()
 // router.post('/register/:role', authController.register)
 
 router.get('/', commissionPostController.getAllCommissionPosts)
+router.get('/search', commissionPostController.searchCommission)
+router.get('/:id', commissionPostController.getCommissionPost)
 router.post('/', authMiddleware.handle('illustrator'), commissionPostController.createCommissionPosts)
 
 module.exports = router

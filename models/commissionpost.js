@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       return {
         ...this.get(), 
         category: this.category.categoryName,
-        tags: this.get().tags.map((tag) => tag.tagName),
+        tags: this.tags !== undefined ? this.get().tags.map((tag) => tag.tagName) : undefined,
         illustrator: this.get().illustrator !== undefined ? {
           id: this.get().illustrator.id,
           name: this.get().illustrator.name,
@@ -79,6 +79,15 @@ module.exports = (sequelize, DataTypes) => {
     defaultScope: {
       attributes: {
         exclude: ['illustratorId', 'categoryId', 'CategoryId', 'IllustratorId']
+      }
+    },
+    scopes: {
+      pagination: (limit, page) => {
+        return {
+          limit,
+          offset: (page - 1) * limit,
+          subQuery: false
+        }
       }
     }
   });

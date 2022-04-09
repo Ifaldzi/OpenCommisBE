@@ -1,4 +1,5 @@
 const express = require('express')
+require('express-async-errors')
 const {sequelize} = require('./models')
 const config = require('./config/config')
 
