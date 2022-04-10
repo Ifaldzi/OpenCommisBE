@@ -1,8 +1,11 @@
 const { Controller } = require('./Controller')
 const { CommissionPost, Category, Tag } = require('../models')
-const { pagination } = require('../config/config')
+const { pagination, path, baseUrl } = require('../config/config')
 const NotFoundError = require('../errors/NotFoundError')
 const { Op } = require('sequelize')
+const { StatusCodes } = require('http-status-codes')
+const { ForbiddenError } = require('../errors')
+const fs = require('fs').promises
 
 class CommissionPostController extends Controller {
     constructor() {
@@ -111,8 +114,90 @@ class CommissionPostController extends Controller {
     }
 
     // authenticated illustrator only
-    createCommissionPosts = (req, res, next) => {
-        return this.response.sendSuccess(res, 'success', req.auth)
+    createCommissionPosts = async (req, res, next) => {
+        const { title, duration, price, description, category: categoryId, tags } = req.body
+        const illustratorId = req.auth.userId
+        const files = req.files
+        
+        const commissionData = {
+            title,
+            durationTime: duration,
+            price,
+            description,
+            categoryId,
+            illustratorId
+        }
+
+        try{
+            for(let i=0; i<files.length; i++) {
+                let filepath = path.commissionImage + files[i].filename
+                await fs.rename(files[i].path, 'public/' + filepath)
+                commissionData['image_' + String(i + 1)] = `${baseUrl}/${filepath}`
+            }
+
+            const commission = await CommissionPost.create(commissionData)
+
+            await commission.setTags(tags)
+
+            await commission.reload({
+                include: ['category', 'tags', 'illustrator']
+            })
+            console.log(commission);
+            
+            return this.response.sendSuccess(res, 'success', commission, StatusCodes.CREATED)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    getAllCommissionPostBelongToAuthenticatedUser = async (req, res, next) => {
+        const illustratorId = req.auth.userId
+
+        const commissions = await CommissionPost.findAll({
+            where: {
+                illustratorId
+            }
+        })
+
+        return this.response.sendSuccess(res, 'Fetch data success', commissions)
+    }
+
+    updateCommissionPost = async (req, res, next) => {
+        const { title, duration: durationTime, price, description, category: categoryId, tags } = req.body
+        const { id: commisionId } = req.params
+        const illustratorId = req.auth.userId
+
+        const updateData = {
+            title,
+            durationTime,
+            price,
+            description,
+            categoryId
+        }
+
+        try {
+            const commission = await CommissionPost.findOne({
+                where: {
+                    id: commisionId
+                }
+            });
+
+            if (!commission) {
+                return next(new NotFoundError())
+            }
+
+            if (commission.illustratorId !== illustratorId) {
+                return next(new ForbiddenError())
+            }
+            
+            await commission.update(updateData)
+
+            await commission.reload({include: ['category', 'tags', 'illustrator']})
+
+            this.response.sendSuccess(res, 'Update data success', commission, StatusCodes.CREATED)
+        } catch(error) {
+            next(error)
+        }
     }
 }
 

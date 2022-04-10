@@ -24,13 +24,15 @@ module.exports = (sequelize, DataTypes) => {
     toJSON() {
       return {
         ...this.get(), 
-        category: this.category.categoryName,
+        category: this.category !== undefined ? this.category.categoryName : undefined,
         tags: this.tags !== undefined ? this.get().tags.map((tag) => tag.tagName) : undefined,
         illustrator: this.get().illustrator !== undefined ? {
           id: this.get().illustrator.id,
           name: this.get().illustrator.name,
           username: this.get().illustrator.username
-        } : undefined
+        } : undefined,
+        categoryId: undefined,
+        illustratorId: undefined
       }
     }
   }
@@ -78,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     defaultScope: {
       attributes: {
-        exclude: ['illustratorId', 'categoryId', 'CategoryId', 'IllustratorId']
+        exclude: ['CategoryId', 'IllustratorId']
       }
     },
     scopes: {
