@@ -41,12 +41,18 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     toJSON() {
+      let substr
+      const image_1 = this.image_1.substr(0, 4) === 'http' ? this.image_1 : `${baseUrl}/${this.image_1}`
+      const image_2 = ((substr = this.image_2?.substr(0, 4)) == 'http' || substr == undefined) ? this.image_2 : `${baseUrl}/${this.image_2}`
+      const image_3 = ((substr = this.image_3?.substr(0, 4)) == 'http' || substr == undefined) ? this.image_3 : `${baseUrl}/${this.image_3}`
+      const image_4 = ((substr = this.image_4?.substr(0, 4)) == 'http' || substr == undefined) ? this.image_4 : `${baseUrl}/${this.image_4}`
+
       return {
         ...this.get(),
-        image_1: `${baseUrl}/${this.image_1}`,
-        image_2: this.image_2 != null ? `${baseUrl}/${this.image_2}`: null,
-        image_3: this.image_3 != null ? `${baseUrl}/${this.image_3}`: null,
-        image_4: this.image_4 != null ? `${baseUrl}/${this.image_4}`: null,
+        image_1: image_1,
+        image_2: image_2,
+        image_3: image_3,
+        image_4: image_4,
         category: this.category !== undefined ? this.category.categoryName : undefined,
         tags: this.tags !== undefined ? this.get().tags.map((tag) => tag.tagName) : undefined,
         illustrator: this.get().illustrator !== undefined ? {
@@ -109,6 +115,9 @@ module.exports = (sequelize, DataTypes) => {
     scopes: {
       pagination: (limit, page) => {
         return {
+          attributes: {
+            exclude: ['CategoryId', 'IllustratorId']
+          },
           limit,
           offset: (page - 1) * limit,
           subQuery: false

@@ -10,4 +10,4 @@ router.get('/commissions',
     commissionPostController.getAllCommissionPostBelongToAuthenticatedUser
 )
 
-module.exports = router
+module.exports = { basePath: '/illustrator', router}

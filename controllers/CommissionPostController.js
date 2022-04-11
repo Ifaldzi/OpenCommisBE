@@ -16,19 +16,19 @@ class CommissionPostController extends Controller {
     getAllCommissionPosts = async (req, res, next) => {
         const page = req.query.page || 1
         const limit = req.query.limit || pagination.defaultLimitPerPage
+        const { category } = req.query
+
+        const where = {
+            status: 'OPEN'
+        }
+
+        if (category)
+            where.categoryId = category
 
         try {
-            const commissionPosts = await CommissionPost.findAndCountAll({
-                include: [
-                    {model: Category, as: 'category', required: true},
-                    {model: Tag, as: 'tags', required: true, through: {attributes: []}}
-                ],
-                where: {
-                    status: 'OPEN'
-                },
+            const commissionPosts = await CommissionPost.scope({method: ['pagination', limit, page]}).findAndCountAll({
+                where: where,
                 distinct: true,
-                limit,
-                offset: (page - 1) * limit
             })
 
             const paginationData = {
@@ -39,8 +39,8 @@ class CommissionPostController extends Controller {
             }
             
             return this.response.sendSuccess(res, 'Fetch data success', {
+                pagination: paginationData,
                 commissionPosts: commissionPosts.rows, 
-                pagination: paginationData
             })
         } catch (errors) {
             console.log(errors);

@@ -8,6 +8,7 @@ const commissionRoute = require('./routes/commission')
 const illustratorRoute = require('./routes/illustrator')
 const notFound = require('./middlewares/notFound')
 const errorHandler = require('./middlewares/errorHandler')
+const useRoute = require('./routes')
 
 class Server {
     #app
@@ -19,9 +20,7 @@ class Server {
 
         this.#app.use(express.static('./public'))
         this.#app.use(express.json())
-        this.#app.use('/api/auth', authRoute)
-        this.#app.use('/api/commissions', commissionRoute)
-        this.#app.use('/api/illustrator', illustratorRoute)
+        useRoute(this.#app)
 
         this.#app.use(notFound)
         this.#app.use(errorHandler)

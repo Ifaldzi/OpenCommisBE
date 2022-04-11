@@ -6,9 +6,6 @@ const upload = require('../middlewares/uploadMiddleware')
 const router = Router()
 
 
-// router.post('/login', authController.login)
-// router.post('/register/:role', authController.register)
-
 router.get('/', commissionPostController.getAllCommissionPosts)
 router.get('/search', commissionPostController.searchCommission)
 router.get('/:id', commissionPostController.getCommissionPost)
@@ -32,4 +29,4 @@ router.delete('/:id',
     commissionPostController.deleteCommissionPost
 )
 
-module.exports = router
+module.exports = {basePath: '/commissions', router}
