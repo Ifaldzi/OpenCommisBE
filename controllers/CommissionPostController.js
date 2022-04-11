@@ -132,7 +132,7 @@ class CommissionPostController extends Controller {
             for(let i=0; i<files.length; i++) {
                 let filepath = path.commissionImage + files[i].filename
                 await fs.rename(files[i].path, 'public/' + filepath)
-                commissionData['image_' + String(i + 1)] = `${baseUrl}/${filepath}`
+                commissionData['image_' + String(i + 1)] = filepath
             }
 
             const commission = await CommissionPost.create(commissionData)
@@ -163,38 +163,68 @@ class CommissionPostController extends Controller {
     }
 
     updateCommissionPost = async (req, res, next) => {
-        const { title, duration: durationTime, price, description, category: categoryId, tags } = req.body
+        const { title, duration: durationTime, price, description, status, category: categoryId, tags } = req.body
         const { id: commisionId } = req.params
         const illustratorId = req.auth.userId
+
+        const images = req.files
 
         const updateData = {
             title,
             durationTime,
             price,
             description,
+            status: status,
             categoryId
         }
 
         try {
-            const commission = await CommissionPost.findOne({
-                where: {
-                    id: commisionId
+            const commission = await CommissionPost.findOneByIdFromIllustrator(commisionId, illustratorId)
+
+            if (images) {
+                for (const key of Object.keys(images)) {
+                    const image = images[key][0]
+                    const filePath = path.commissionImage + image.filename
+                    
+                    await fs.rename(image.path, 'public/' + filePath)
+                    updateData[key] = filePath
+
+                    if (commission[key]) {
+                        // delete old image
+                        await fs.unlink('public/' + commission[key])
+                    }
                 }
-            });
-
-            if (!commission) {
-                return next(new NotFoundError())
-            }
-
-            if (commission.illustratorId !== illustratorId) {
-                return next(new ForbiddenError())
             }
             
             await commission.update(updateData)
 
+            if (tags) {
+                await commission.setTags(tags)
+            }
+
             await commission.reload({include: ['category', 'tags', 'illustrator']})
 
             this.response.sendSuccess(res, 'Update data success', commission, StatusCodes.CREATED)
+        } catch(error) {
+            next(error)
+        }
+    }
+
+    deleteCommissionPost = async (req, res, next) => {
+        const { id: commisionId } = req.params
+        const { userId: illustratorId} = req.auth
+
+        try {
+            const commission = await CommissionPost.findOneByIdFromIllustrator(commisionId, illustratorId)
+            
+            for (let i = 1; i <= 4; i++) {
+                const imagePath = commission['image_' + i]
+                if (imagePath)
+                    await fs.unlink('public/' + imagePath)
+            }
+
+            await commission.destroy()
+            return this.response.sendSuccess(res, 'Data deleted success', null)
         } catch(error) {
             next(error)
         }

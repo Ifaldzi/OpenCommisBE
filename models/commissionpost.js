@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+const { baseUrl } = require('../config/config');
+const { ForbiddenError } = require('../errors');
+const NotFoundError = require('../errors/NotFoundError');
 module.exports = (sequelize, DataTypes) => {
   class CommissionPost extends Model {
     /**
@@ -21,9 +24,29 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
+    static async findOneByIdFromIllustrator(commissionId, illustratorId) {
+      const commission = await this.findOne({
+        where: {
+          id: commissionId
+        }
+      })
+
+      if (!commission)
+        throw new NotFoundError()
+
+      if (commission.illustratorId !== illustratorId)
+        throw new ForbiddenError()
+
+      return commission
+    }
+
     toJSON() {
       return {
-        ...this.get(), 
+        ...this.get(),
+        image_1: `${baseUrl}/${this.image_1}`,
+        image_2: this.image_2 != null ? `${baseUrl}/${this.image_2}`: null,
+        image_3: this.image_3 != null ? `${baseUrl}/${this.image_3}`: null,
+        image_4: this.image_4 != null ? `${baseUrl}/${this.image_4}`: null,
         category: this.category !== undefined ? this.category.categoryName : undefined,
         tags: this.tags !== undefined ? this.get().tags.map((tag) => tag.tagName) : undefined,
         illustrator: this.get().illustrator !== undefined ? {
@@ -64,7 +87,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: "OPEN",
       validate: {
-        isIn: ['OPEN', 'CLOSED']
+        isIn: [['OPEN', 'CLOSED']]
       }
     },
     image_1: {
