@@ -2,6 +2,7 @@ const express = require('express')
 require('express-async-errors')
 const {sequelize} = require('./models')
 const config = require('./config/config')
+const cors = require('cors')
 
 const authRoute = require('./routes/auth')
 const commissionRoute = require('./routes/commission')
@@ -17,6 +18,8 @@ class Server {
     constructor() {
         this.#app = express()
         this.#port = config.port
+
+        this.#app.use(cors())
 
         this.#app.use(express.static('./public'))
         this.#app.use(express.json())
