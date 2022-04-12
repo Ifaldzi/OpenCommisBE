@@ -14,8 +14,8 @@ class CommissionPostController extends Controller {
 
     // public access
     getAllCommissionPosts = async (req, res, next) => {
-        const page = req.query.page || 1
-        const limit = req.query.limit || pagination.defaultLimitPerPage
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || pagination.defaultLimitPerPage
         const { category } = req.query
 
         const where = {
@@ -67,8 +67,8 @@ class CommissionPostController extends Controller {
     searchCommission = async (req, res, next) => {
         const { q: keyword } = req.query
 
-        const page = req.query.page || 1
-        const limit = req.query.limit || pagination.defaultLimitPerPage
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || pagination.defaultLimitPerPage
 
         const wordsToFind = keyword.split(' ').join('|')
 
