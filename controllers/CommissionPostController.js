@@ -29,6 +29,7 @@ class CommissionPostController extends Controller {
             const commissionPosts = await CommissionPost.scope({method: ['pagination', limit, page]}).findAndCountAll({
                 where: where,
                 distinct: true,
+                include: ['illustrator']
             })
 
             const paginationData = {
