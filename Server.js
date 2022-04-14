@@ -3,6 +3,7 @@ require('express-async-errors')
 const {sequelize} = require('./models')
 const config = require('./config/config')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
 
 const authRoute = require('./routes/auth')
 const commissionRoute = require('./routes/commission')
@@ -23,6 +24,7 @@ class Server {
 
         this.#app.use(express.static('./public'))
         this.#app.use(express.json())
+        this.#app.use(cookieParser())
         useRoute(this.#app)
 
         this.#app.use(notFound)

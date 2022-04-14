@@ -3,24 +3,41 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class order extends Model {
+  class Order extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ CommissionPost, Consumer }) {
       // define association here
+      this.belongsTo(CommissionPost, { as: 'commission' })
+      this.belongsTo(Consumer, { as: 'consumer' })
     }
   }
-  order.init({
-    status: DataTypes.STRING,
-    grand_total: DataTypes.DOUBLE,
-    order_data: DataTypes.DATE
+  Order.init({
+    status: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      defaultValue: 'CREATED',
+      validate: {
+        isIn: [['CREATED', 'ACCEPTED', 'DENIED', 'NOT_PAID', 'ON_WORK', 'FAILED', 'SENT', 'FINISHED']]
+      }
+    },
+    grandTotal: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
+    },
+    orderDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: new Date()
+    }
   }, {
     sequelize,
-    modelName: 'order',
+    modelName: 'Order',
     underscored: true,
+    timestamps: false
   });
-  return order;
+  return Order;
 };
