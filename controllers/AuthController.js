@@ -23,7 +23,7 @@ class AuthController extends Controller {
                     const isPasswordMatch = await user.verifyPassword(loginData.password)
                     if (isPasswordMatch) {
                         const token = createJWT(user.id, role)
-                        res.cookie('token', token, { maxAge: 3600000 * 24 * 14, httpOnly: false })
+                        res.cookie('token', token, { maxAge: 3600000 * 24 * 14, httpOnly: false, sameSite: 'none', secure: true})
                         return this.response.sendSuccess(res, "Login success", {user, token, role})
                     }
                 }
@@ -57,7 +57,7 @@ class AuthController extends Controller {
     }
 
     logout = async (req, res, next) => {
-        res.clearCookie('token')
+        res.clearCookie('token', { sameSite: 'none', secure: true})
         return this.response.sendSuccess(res, "Logout success")
     }
 }
