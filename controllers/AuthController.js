@@ -23,8 +23,8 @@ class AuthController extends Controller {
                     const isPasswordMatch = await user.verifyPassword(loginData.password)
                     if (isPasswordMatch) {
                         const token = createJWT(user.id, role)
-                        res.cookie('token', token, { maxAge: 3600000 * 24 * 14 })
-                        return this.response.sendSuccess(res, "Login success", {user, token})
+                        res.cookie('token', token, { maxAge: 3600000 * 24 * 14, httpOnly: false })
+                        return this.response.sendSuccess(res, "Login success", {user, token, role})
                     }
                 }
                 return this.response.sendError(res, "Password or username incorrect")
@@ -44,7 +44,7 @@ class AuthController extends Controller {
             switch (role) {
                 case 'illustrator':
                     const user = await Illustrator.create(userData)
-                    return this.response.sendSuccess(res, "Register user success", user)
+                    return this.response.sendSuccess(res, "Register user success", {user, role})
                 case 'consumer':
                     return this.response.sendError(res, "This feature is not available right now")
                 default:
