@@ -20,7 +20,10 @@ class Server {
         this.#app = express()
         this.#port = config.port
 
-        this.#app.use(cors())
+        this.#app.use(cors({
+            origin: 'http://localhost:3000',
+            credentials: true
+        }))
 
         this.#app.use(express.static('./public'))
         this.#app.use(express.json())
