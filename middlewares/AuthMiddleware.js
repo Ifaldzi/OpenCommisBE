@@ -7,7 +7,7 @@ class AuthMiddleware {
     handle(allowedRole = null) {
         return (req, res, next) => {
             const authHeader = req.headers.authorization
-            const { token: authToken} = req.cookies
+            let { token: authToken} = req.cookies
 
             if (!authHeader && !authToken) {
                 throw new UnauthorizedError()
