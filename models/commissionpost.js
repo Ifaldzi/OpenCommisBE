@@ -47,18 +47,19 @@ module.exports = (sequelize, DataTypes) => {
       const image_3 = ((substr = this.image_3?.substr(0, 4)) == 'http' || substr == undefined) ? this.image_3 : `${baseUrl}/${this.image_3}`
       const image_4 = ((substr = this.image_4?.substr(0, 4)) == 'http' || substr == undefined) ? this.image_4 : `${baseUrl}/${this.image_4}`
 
+      const profilePicture = ((substr = this.illustrator?.profilePicture?.substr(0, 4)) === 'http' || substr == undefined) ? this.illustrator?.profilePicture : `${baseUrl}/${this.illustrator?.profilePicture}`
+
       return {
         ...this.get(),
         image_1: image_1,
         image_2: image_2,
         image_3: image_3,
         image_4: image_4,
-        category: this.category !== undefined ? this.category.categoryName : undefined,
-        tags: this.tags !== undefined ? this.get().tags.map((tag) => tag.tagName) : undefined,
         illustrator: this.get().illustrator !== undefined ? {
           id: this.get().illustrator.id,
           name: this.get().illustrator.name,
-          username: this.get().illustrator.username
+          username: this.get().illustrator.username,
+          profilePicture: profilePicture
         } : undefined,
         categoryId: undefined,
         illustratorId: undefined

@@ -3,25 +3,50 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class portfolio extends Model {
+  class Portfolio extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ Illustrator }) {
       // define association here
+      this.belongsTo(Illustrator, { as: 'illustrator' })
+    }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        illustratorId: undefined
+      }
     }
   }
-  portfolio.init({
-    bio: DataTypes.TEXT,
-    instagram_acc: DataTypes.STRING,
-    twitter_acc: DataTypes.STRING,
-    facebook_acc: DataTypes.STRING
+  Portfolio.init({
+    bio: {
+      type: DataTypes.TEXT
+    },
+    instagramAcc: {
+      type: DataTypes.STRING
+    },
+    twitterAcc: {
+      type: DataTypes.STRING
+    },
+    facebookAcc: {
+      type: DataTypes.STRING
+    }
   }, {
     sequelize,
-    modelName: 'portfolio',
+    modelName: 'Portfolio',
     underscored: true,
+    timestamps: false,
+    defaultScope: {
+      attributes: {
+        exclude: ['illustrator_id']
+      }
+    }
   });
-  return portfolio;
+
+  Portfolio.removeAttribute('id')
+
+  return Portfolio;
 };

@@ -1,6 +1,6 @@
 'use strict';
 const bcrypt = require('bcrypt')
-const { hash } = require('../config/config')
+const { hash, baseUrl } = require('../config/config')
 
 const {
   Model
@@ -12,18 +12,23 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({CommissionPost}) {
+    static associate({CommissionPost, Portfolio, Artwork}) {
       // define association here
       this.hasMany(CommissionPost, {as: 'commissionPosts'})
+      this.hasOne(Portfolio, { as: 'portfolio', foreignKey: 'illustrator_id' })
+      this.hasMany(Artwork, { as: 'artworks' })
     }
 
     toJSON() {
-      const obj = Object.assign({}, this.get())
+      let substr
+      const profilePicture = ((substr = this.profilePicture?.substr(0, 4)) == 'http' || substr == undefined) ? this.profilePicture : `${baseUrl}/${this.profilePicture}`
 
-      delete obj.password
-      delete obj.activationToken
-
-      return obj
+      return {
+        ...this.get(),
+        password: undefined,
+        activationToken: undefined,
+        profilePicture: profilePicture
+      }
     }
 
     async verifyPassword(password) {

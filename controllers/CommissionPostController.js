@@ -85,7 +85,7 @@ class CommissionPostController extends Controller {
                 }
             },
             include: [
-                {association: 'category'},
+                {association: 'illustrator'},
                 {
                     association: "tags",
                     attributes: [],
@@ -143,7 +143,6 @@ class CommissionPostController extends Controller {
             await commission.reload({
                 include: ['category', 'tags', 'illustrator']
             })
-            console.log(commission);
             
             return this.response.sendSuccess(res, 'success', commission, StatusCodes.CREATED)
         } catch (error) {
