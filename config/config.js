@@ -15,6 +15,8 @@ module.exports = {
         defaultLimitPerPage: 15,
     },
     path: {
-        commissionImage: 'img/commission/'
+        commissionImage: 'img/commission/',
+        artworkImage: 'img/artworks/',
+        profilePicture: 'img/profile/'
     }
 }

@@ -1,3 +1,5 @@
+const { StatusCodes } = require("http-status-codes");
+const { ValidationError } = require("sequelize");
 const { enviroment } = require("../config/config");
 const CustomError = require("../errors/CustomError")
 const { sendError } = require('../services/response')
@@ -10,7 +12,11 @@ const errorHandler = (err, req, res, next) => {
         return sendError(res, err.message, err.statusCode)
     }
 
-    return sendError(res, 'Something went wrong, please try agai later', 500)
+    if (err instanceof ValidationError) {
+        return sendError(res, 'Bad request, check again your input request', StatusCodes.BAD_REQUEST)
+    }
+
+    return sendError(res, 'Something went wrong, please try again later', StatusCodes.INTERNAL_SERVER_ERROR)
 }
 
 module.exports = errorHandler

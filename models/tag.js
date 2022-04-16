@@ -13,6 +13,13 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsToMany(CommissionPost, {through: 'commission_tags', timestamps: false})
     }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        commission_tags: undefined
+      }
+    }
   }
   Tag.init({
     tagName: {
