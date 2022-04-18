@@ -1,6 +1,9 @@
 const { Controller } = require("./Controller");
 const { Illustrator } = require('../models')
-const { createJWT } = require('../services/jwtService')
+const { createJWT } = require('../services/jwtService');
+const { BadRequestError } = require("../errors");
+const jwt = require('jsonwebtoken')
+const { jwt: jwtConfig } = require('../config/config')
 
 const ROLE = {
     ILLUSTRATOR: 'illustrator',
@@ -59,6 +62,25 @@ class AuthController extends Controller {
     logout = async (req, res, next) => {
         res.clearCookie('token')
         return this.response.sendSuccess(res, "Logout success")
+    }
+
+    checkToken = async (req, res, next) => {
+        const authHeader = req.headers.authorization
+
+        if (!authHeader) {
+            throw new BadRequestError("Token not provided")
+        }
+
+        const authToken = authHeader.split(' ')[1]
+
+        try {
+            const decodedAuthData = jwt.verify(authToken, jwtConfig.secretKey)
+            const { role } = decodedAuthData
+
+            return this.response.sendSuccess(res, "Token valid", { tokenValid: true, role})
+        } catch (errors) {
+            return this.response.sendSuccess(res, "Token invalid", { tokenValid: false, role: null })
+        }
     }
 }
 
