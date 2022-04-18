@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       return {
         ...this.get(),
         password: undefined,
-        emailVerified: undefined
+        activationToken: undefined
       }
     }
 
