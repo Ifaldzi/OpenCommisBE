@@ -9,10 +9,19 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ CommissionPost, Consumer }) {
+    static associate({ CommissionPost, Consumer, OrderDetail }) {
       // define association here
-      this.belongsTo(CommissionPost, { as: 'commission' })
+      this.belongsTo(CommissionPost, { as: 'commission', foreignKey: 'commissionPostId'})
       this.belongsTo(Consumer, { as: 'consumer' })
+      this.hasOne(OrderDetail, { as: 'detail', foreignKey: 'orderId' })
+    }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        commissionPostId: undefined,
+        consumerId: undefined
+      }
     }
   }
   Order.init({
@@ -37,7 +46,19 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Order',
     underscored: true,
-    timestamps: false
+    timestamps: false,
+    scopes: {
+      pagination: (limit, page) => {
+        return {
+          // attributes: {
+          //   exclude: ['CategoryId', 'IllustratorId']
+          // },
+          limit,
+          offset: (page - 1) * limit,
+          subQuery: false
+        }
+      }
+    }
   });
   return Order;
 };

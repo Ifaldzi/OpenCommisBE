@@ -2,24 +2,43 @@
 const {
   Model
 } = require('sequelize');
+const { baseUrl } = require('../config/config');
 module.exports = (sequelize, DataTypes) => {
-  class order_detail extends Model {
+  class OrderDetail extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ Order }) {
       // define association here
+      this.belongsTo(Order, { as: 'order' })
+    }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        orderId: undefined,
+        referenceImage: this.referenceImage !== null ? `${baseUrl}/${this.referenceImage}` : null
+      }
     }
   }
-  order_detail.init({
-    request_detai: DataTypes.TEXT,
-    reference_image: DataTypes.STRING
+  OrderDetail.init({
+    requestDetail: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    referenceImage: {
+      type: DataTypes.STRING
+    }
   }, {
     sequelize,
-    modelName: 'order_detail',
+    modelName: 'OrderDetail',
     underscored: true,
+    timestamps: false
   });
-  return order_detail;
+
+  OrderDetail.removeAttribute('id')
+
+  return OrderDetail;
 };
