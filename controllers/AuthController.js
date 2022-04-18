@@ -1,6 +1,8 @@
 const { Controller } = require("./Controller");
-const { Illustrator } = require('../models')
+const { Illustrator, Consumer } = require('../models')
 const { createJWT } = require('../services/jwtService');
+const { CustomError } = require("../errors");
+const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
 const jwt = require('jsonwebtoken')
 const { jwt: jwtConfig } = require('../config/config')
@@ -19,24 +21,29 @@ class AuthController extends Controller {
         const { role } = req.query
         const loginData = req.body
 
+        let user
         switch (role) {
             case ROLE.ILLUSTRATOR:
-                const user = await Illustrator.findOne({where: {email: loginData.email}})
-                if (user) {
-                    const isPasswordMatch = await user.verifyPassword(loginData.password)
-                    if (isPasswordMatch) {
-                        const token = createJWT(user.id, role)
-                        res.cookie('token', token, { maxAge: 3600000 * 24 * 14, httpOnly: false, sameSite: 'none', secure: true})
-                        return this.response.sendSuccess(res, "Login success", {user, token, role})
-                    }
-                }
-                return this.response.sendError(res, "Password or username incorrect")
+                user = await Illustrator.findOne({where: {email: loginData.email}})
+                break;
             case ROLE.CONSUMER:
-                return this.response.sendError(res, "This feature is not available right now")
+                user = await Consumer.findOne({where: {email: loginData.email}})
+                break
             default:
-                next()
+                throw new CustomError("Role invalid", StatusCodes.BAD_REQUEST)
                 break;
         }
+
+        if (user) {
+            const isPasswordMatch = await user.verifyPassword(loginData.password)
+            if (isPasswordMatch) {
+                const token = createJWT(user.id, role)
+                res.cookie('token', token, { maxAge: 3600000 * 24 * 14, httpOnly: false })
+                return this.response.sendSuccess(res, "Login success", {user, token, role})
+            }
+        }
+
+        return this.response.sendError(res, "Password or username incorrect")
     }
 
     register = async (req, res, next) => {
@@ -44,18 +51,21 @@ class AuthController extends Controller {
         const userData = req.body
 
         try {
+            let user
             switch (role) {
                 case 'illustrator':
-                    const user = await Illustrator.create(userData)
-                    return this.response.sendSuccess(res, "Register user success", {user, role})
+                    user = await Illustrator.create(userData)
+                    break;
                 case 'consumer':
-                    return this.response.sendError(res, "This feature is not available right now")
+                    user = await Consumer.create(userData)
+                    break;
                 default:
                     next()
                     break;
             }
+            return this.response.sendSuccess(res, "Register user success", {user, role})
         } catch(error) {
-            return this.response.sendError(res, error)
+            next(error)
         }
     }
 

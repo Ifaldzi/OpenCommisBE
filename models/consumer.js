@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const bcrypt = require('bcrypt')
+const { hash } = require('../config/config')
 module.exports = (sequelize, DataTypes) => {
   class Consumer extends Model {
     /**
@@ -12,6 +14,18 @@ module.exports = (sequelize, DataTypes) => {
     static associate({ Order }) {
       // define association here
       this.hasMany(Order, { as: 'orders' })
+    }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        password: undefined,
+        activationToken: undefined
+      }
+    }
+
+    async verifyPassword(password) {
+      return await bcrypt.compare(password, this.password)
     }
   }
   Consumer.init({
@@ -33,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     password: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     phone: {
