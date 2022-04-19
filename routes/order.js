@@ -25,4 +25,10 @@ router.get(
     orderController.getDetailOrder
 )
 
+router.post(
+    '/:id/confirm',
+    AuthMiddleware.handle(ROLE.ILLUSTRATOR),
+    orderController.confirmOrder
+)
+
 module.exports = { basePath: '/orders', router}

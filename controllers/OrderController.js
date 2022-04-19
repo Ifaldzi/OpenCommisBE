@@ -4,7 +4,7 @@ const { Order, CommissionPost } = require('../models');
 const { moveFile } = require("../services/fileService");
 const { path } = require("../config/config");
 const MailService = require("../services/MailService");
-const { ROLE } = require("../config/constants");
+const { ROLE, STATUS } = require("../config/constants");
 const { pagination } = require('../config/config');
 const NotFoundError = require("../errors/NotFoundError");
 
@@ -103,6 +103,33 @@ class OrderController extends Controller {
             throw new NotFoundError()
 
         return this.response.sendSuccess(res, "Fetch data success", order)
+    }
+
+    confirmOrder = async (req, res, next) => {
+        const { id: orderId } = req.params
+        const { accept, rejectionReason } = req.body
+        const { userId } = req.auth
+
+        try {
+            const order = await Order.findOneWhichBelongsToIllustrator(orderId, userId)
+            
+            if (accept == true) {
+                await order.update({ status: STATUS.ACCEPTED})
+
+                this.mailService.sendConfirmationMail(order)
+            } else {
+                if (!rejectionReason)
+                    throw new BadRequestError('Rejection reason not provided')
+                
+                await order.update({ status: STATUS.DENIED })
+
+                this.mailService.sendRejectionMail(order, rejectionReason)
+            }
+
+            return this.response.sendSuccess(res, "Order confirmed successfully", order)
+        } catch (error) {
+            next(error)
+        }
     }
 }
 

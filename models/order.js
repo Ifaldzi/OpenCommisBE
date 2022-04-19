@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const { ForbiddenError } = require('../errors');
+const NotFoundError = require('../errors/NotFoundError');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     /**
@@ -14,6 +16,20 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(CommissionPost, { as: 'commission', foreignKey: 'commissionPostId'})
       this.belongsTo(Consumer, { as: 'consumer' })
       this.hasOne(OrderDetail, { as: 'detail', foreignKey: 'orderId' })
+    }
+
+    static async findOneWhichBelongsToIllustrator(orderId, illustratorId) {
+      const order = await this.findOne({ 
+        where: { id: orderId },
+        include: ['detail', 'commission', 'consumer']
+      })
+      if (!order)
+        throw new NotFoundError()
+
+      if (order.commission.illustratorId !== illustratorId)
+        throw new ForbiddenError()
+
+      return order
     }
 
     toJSON() {
@@ -50,9 +66,6 @@ module.exports = (sequelize, DataTypes) => {
     scopes: {
       pagination: (limit, page) => {
         return {
-          // attributes: {
-          //   exclude: ['CategoryId', 'IllustratorId']
-          // },
           limit,
           offset: (page - 1) * limit,
           subQuery: false
