@@ -131,6 +131,30 @@ class OrderController extends Controller {
             next(error)
         }
     }
+
+    getOrdersByCommissionId = async (req, res, next) => {
+        const { id: commissionId } = req.params
+        const { userId: illustratorId } = req.auth
+
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || pagination.defaultLimitPerPage
+
+        try {
+            await CommissionPost.findOneByIdFromIllustrator(commissionId, illustratorId)
+        } catch (error) {
+            return next(error)
+        }
+
+        const orders = await Order.scope({method: ['pagination', limit, page]}).findAndCountAll({
+            where: { commissionPostId: commissionId },
+            include: ['consumer'],
+            distinct: true
+        })
+
+        const paginationData = this.generatePaginationData(orders, limit, page)
+
+        return this.response.sendSuccess(res, "Fetch data success", { pagination: paginationData, orders: orders.rows})
+    }
 }
 
 module.exports = new OrderController()

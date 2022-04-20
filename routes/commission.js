@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const { ROLE } = require('../config/constants')
 const commissionPostController = require('../controllers/CommissionPostController')
+const orderController = require('../controllers/OrderController')
 const authMiddleware = require('../middlewares/AuthMiddleware')
 const upload = require('../middlewares/uploadMiddleware')
 const router = Router()
@@ -27,6 +28,12 @@ router.put('/:id',
 router.delete('/:id',
     authMiddleware.handle([ROLE.ILLUSTRATOR, ROLE.ADMIN]),
     commissionPostController.deleteCommissionPost
+)
+
+router.get(
+    '/:id/orders',
+    authMiddleware.handle(ROLE.ILLUSTRATOR),
+    orderController.getOrdersByCommissionId
 )
 
 module.exports = {basePath: '/commissions', router}
