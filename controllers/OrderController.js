@@ -1,6 +1,6 @@
 const { BadRequestError } = require("../errors");
 const { Controller } = require("./Controller");
-const { Order, CommissionPost } = require('../models');
+const { Order, CommissionPost, Sequelize } = require('../models');
 const { moveFile } = require("../services/fileService");
 const { path } = require("../config/config");
 const MailService = require("../services/MailService");
@@ -137,7 +137,7 @@ class OrderController extends Controller {
         const { userId: illustratorId } = req.auth
 
         const page = Number(req.query.page) || 1
-        const limit = Number(req.query.limit) || pagination.defaultLimitPerPage
+        const limit = Number(req.query.limit) || pagination.defaultOrderPerPage
 
         try {
             await CommissionPost.findOneByIdFromIllustrator(commissionId, illustratorId)
@@ -147,6 +147,10 @@ class OrderController extends Controller {
 
         const orders = await Order.scope({method: ['pagination', limit, page]}).findAndCountAll({
             where: { commissionPostId: commissionId },
+            order: [
+                [Sequelize.literal("status='FAILED',status='FINISHED',status='DENIED',status='SENT',status='NOT_PAID',status='ACCEPTED',status='ON_WORK',status='CREATED'"), 'ASC'],
+                ['orderDate', 'ASC'],
+            ],
             include: ['consumer'],
             distinct: true
         })

@@ -13,6 +13,7 @@ module.exports = {
     },
     pagination: {
         defaultLimitPerPage: 15,
+        defaultOrderPerPage: 5
     },
     path: {
         commissionImage: 'img/commission/',
