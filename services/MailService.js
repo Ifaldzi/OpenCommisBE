@@ -18,15 +18,34 @@ class MailService {
         this.sender = 'opencommiss@gmail.com'
     }
 
-    async sendNotification(to, body) {
+    async #sendNotification(to, subject, body) {
         const mail = await this.transporter.sendMail({
             from: this.sender,
             to,
-            subject: 'There is an update on your order',
+            subject,
             html: body
         })
 
+        console.log(mail);
         return mail
+    }
+
+    async sendConfirmationMail(orderData) {
+        const { consumer, commission } = orderData
+        this.#sendNotification(
+            consumer.email,
+            `Pesanan "${commission.title}" Dikonfirmasi Illustrator`,
+            `<h3>Pesanan mu dengan order-id: ${orderData.id} sudah dikonfirmasi oleh illustrator, segera lakukan pembayaran agar pesanan mu segera dikerjakan</h3>`
+        )
+    }
+
+    async sendRejectionMail(orderData, rejectionReason) {
+        const { consumer, commission } = orderData
+        this.#sendNotification(
+            consumer.email,
+            `Pesanan "${commission.title}" Ditolak Illustrator`,
+            `<h3>Mohon maaf pesanan mu dengan order-id: ${orderData.id} ditolak oleh illustrator</h3><p>Alasan penolakan: ${rejectionReason}</p>`
+        )
     }
 }
 

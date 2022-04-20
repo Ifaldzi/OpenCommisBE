@@ -13,11 +13,13 @@ module.exports = {
     },
     pagination: {
         defaultLimitPerPage: 15,
+        defaultOrderPerPage: 5
     },
     path: {
         commissionImage: 'img/commission/',
         artworkImage: 'img/artworks/',
-        profilePicture: 'img/profile/'
+        profilePicture: 'img/profile/',
+        referenceImage: 'img/order/ref/'
     },
     mail: {
         host: process.env.MAIL_HOST,
