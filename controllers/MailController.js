@@ -10,7 +10,7 @@ class MailController extends Controller {
         const { to, body } = req.body
 
         try {
-            const mail = await new MailService().sendNotification(to, body)
+            const mail = await new MailService().sendNotification(to, 'Test email', body)
             this.response.sendSuccess(res, "Email sent success", mail)
         } catch (error) {
             next(error)
