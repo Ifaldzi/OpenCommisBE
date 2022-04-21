@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-console.log(new Date().toString())
-
 module.exports = {
     port: process.env.PORT || 3000,
     baseUrl: process.env.BASE_URL || 'http://127.0.0.1:5000',
