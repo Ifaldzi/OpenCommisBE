@@ -31,4 +31,10 @@ router.post(
     orderController.confirmOrder
 )
 
+router.post(
+    '/:id/pay',
+    AuthMiddleware.handle(ROLE.CONSUMER),
+    orderController.createPayment
+)
+
 module.exports = { basePath: '/orders', router}

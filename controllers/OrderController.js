@@ -1,12 +1,13 @@
 const { BadRequestError } = require("../errors");
 const { Controller } = require("./Controller");
-const { Order, CommissionPost, Sequelize } = require('../models');
+const { Order, CommissionPost, Sequelize, Payment } = require('../models');
 const { moveFile } = require("../services/fileService");
 const { path } = require("../config/config");
 const MailService = require("../services/MailService");
 const { ROLE, STATUS } = require("../config/constants");
 const { pagination } = require('../config/config');
 const NotFoundError = require("../errors/NotFoundError");
+const PaymentService = require("../services/PaymentService");
 
 class OrderController extends Controller {
     constructor() {
@@ -158,6 +159,38 @@ class OrderController extends Controller {
         const paginationData = this.generatePaginationData(orders, limit, page)
 
         return this.response.sendSuccess(res, "Fetch data success", { pagination: paginationData, orders: orders.rows})
+    }
+
+    createPayment = async (req, res, next) => {
+        const { id: orderId } = req.params
+        const { method } = req.body
+
+        const order = await Order.findOne({ where: { id: orderId } })
+
+        if (!order)
+            throw new NotFoundError()
+
+        let payment = await order.getPayment()
+        if (payment) {
+            return this.response.sendSuccess(res, "Payment created", {paymentLink: payment.paymentLink, order})
+        }
+            
+        // create invoice in xendit
+        const paymentService = new PaymentService()
+        const invoice = await paymentService.createInvoice(order, method)
+
+        payment = await Payment.create({
+            paymentLink: invoice.invoice_url,
+            invoiceRefId: invoice.id,
+            orderId: order.id
+        })
+
+        await order.update({
+            status: STATUS.NOT_PAID,
+            paymentId: payment.id
+        })
+
+        return this.response.sendSuccess(res, "Payment created", {paymentLink: invoice.invoice_url, order})
     }
 }
 

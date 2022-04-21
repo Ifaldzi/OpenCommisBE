@@ -3,25 +3,39 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class payment extends Model {
+  class Payment extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ Order }) {
       // define association here
+      this.belongsTo(Order, { as: 'order' })
     }
   }
-  payment.init({
-    payment_method: DataTypes.STRING,
-    payment_date: DataTypes.DATE,
-    payment_link: DataTypes.STRING,
-    invoice_ref_id: DataTypes.STRING
+  Payment.init({
+    paymentMethod: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    paymentDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    paymentLink: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    invoiceRefId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
   }, {
     sequelize,
-    modelName: 'payment',
+    modelName: 'Payment',
     underscored: true,
+    timestamps: false
   });
-  return payment;
+  return Payment;
 };
