@@ -97,7 +97,7 @@ class OrderController extends Controller {
 
         const order = await Order.findOne({
             where: {id: orderId},
-            include: ['detail', 'consumer', 'commission']
+            include: ['detail', 'consumer', 'commission', 'payment']
         })
 
         if (!order)

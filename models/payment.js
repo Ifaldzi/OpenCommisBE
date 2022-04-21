@@ -13,6 +13,14 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(Order, { as: 'order' })
     }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        orderId: undefined,
+        invoiceRefId: undefined
+      }
+    }
   }
   Payment.init({
     paymentMethod: {
