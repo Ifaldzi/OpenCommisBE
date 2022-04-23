@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const { ForbiddenError } = require('../errors');
+const NotFoundError = require('../errors/NotFoundError');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     /**
@@ -9,10 +11,48 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ CommissionPost, Consumer }) {
+    static associate({ CommissionPost, Consumer, OrderDetail, Payment }) {
       // define association here
-      this.belongsTo(CommissionPost, { as: 'commission' })
+      this.belongsTo(CommissionPost, { as: 'commission', foreignKey: 'commissionPostId'})
       this.belongsTo(Consumer, { as: 'consumer' })
+      this.hasOne(OrderDetail, { as: 'detail', foreignKey: 'orderId' })
+      this.hasOne(Payment, { as: 'payment', foreignKey: 'orderId' })
+    }
+
+    static async findOneWhichBelongsToIllustrator(orderId, illustratorId) {
+      const order = await this.findOne({ 
+        where: { id: orderId },
+        include: ['detail', 'commission', 'consumer']
+      })
+      if (!order)
+        throw new NotFoundError()
+
+      if (order.commission.illustratorId !== illustratorId)
+        throw new ForbiddenError()
+
+      return order
+    }
+
+    static async findOneWhichBelongsToConsumer(orderId, consumerId) {
+      const order = await this.findOne({ 
+        where: { id: orderId },
+        include: ['detail', 'commission', 'consumer']
+      })
+      if (!order)
+        throw new NotFoundError()
+
+      if (order.consumer.id !== consumerId)
+        throw new ForbiddenError()
+
+      return order 
+    }
+
+    toJSON() {
+      return {
+        ...this.get(),
+        commissionPostId: undefined,
+        consumerId: undefined
+      }
     }
   }
   Order.init({
@@ -37,7 +77,16 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Order',
     underscored: true,
-    timestamps: false
+    timestamps: false,
+    scopes: {
+      pagination: (limit, page) => {
+        return {
+          limit,
+          offset: (page - 1) * limit,
+          subQuery: false
+        }
+      }
+    }
   });
   return Order;
 };

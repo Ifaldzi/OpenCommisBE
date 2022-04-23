@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ Illustrator, Category, Tag }) {
+    static associate({ Illustrator, Category, Tag, Order }) {
       // define association here
       this.belongsTo(Illustrator, {as: 'illustrator'})
       this.belongsTo(Category, {as: 'category'})
@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tags', 
         timestamps: false
       })
+      this.hasMany(Order, { as: 'orders', foreignKey: 'commissionPostId' })
     }
 
     static async findOneByIdFromIllustrator(commissionId, illustratorId) {

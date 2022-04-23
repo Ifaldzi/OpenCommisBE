@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
     async verifyPassword(password) {
       return await bcrypt.compare(password, this.password)
     }
+
+    async addBalance(amount) {
+      this.balance += amount
+      await this.save()
+    }
   }
   
   Illustrator.init({

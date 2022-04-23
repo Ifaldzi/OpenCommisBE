@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate({ Order }) {
       // define association here
-      this.hasMany(Order, { as: 'orders' })
+      this.hasMany(Order, { as: 'orders', foreignKey: 'consumerId' })
     }
 
     toJSON() {
