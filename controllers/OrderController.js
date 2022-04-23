@@ -1,13 +1,14 @@
 const { BadRequestError } = require("../errors");
 const { Controller } = require("./Controller");
 const { Order, CommissionPost, Sequelize, Payment } = require('../models');
-const { moveFile } = require("../services/fileService");
+const { moveFile, deleteFile } = require("../services/fileService");
 const { path } = require("../config/config");
 const MailService = require("../services/MailService");
 const { ROLE, STATUS } = require("../config/constants");
 const { pagination } = require('../config/config');
 const NotFoundError = require("../errors/NotFoundError");
 const PaymentService = require("../services/PaymentService");
+const fs = require('fs')
 
 class OrderController extends Controller {
     constructor() {
@@ -191,6 +192,60 @@ class OrderController extends Controller {
         })
 
         return this.response.sendSuccess(res, "Payment created", {paymentLink: invoice.invoice_url, order})
+    }
+
+    uploadSubmissionFile = async (req, res) => {
+        const submissionFile = req.file
+
+        return this.response.sendSuccess(res, 'File uploaded', {path: submissionFile.path})
+    }
+
+    sendSubmission = async (req, res, next) => {
+        const { description, link, submissionFile } = req.body
+        const { id: orderId } = req.params
+        const { userId: illustratorId } = req.auth
+
+        try {
+            const order = await Order.findOneWhichBelongsToIllustrator(orderId, illustratorId)
+
+            await this.mailService.sendOrderSubmission(order, { filePath: submissionFile, link}, description)
+            
+            await order.update({
+                status: STATUS.SENT
+            })
+
+            if (submissionFile) {
+                fs.unlink(submissionFile, (err) => {
+                    if (err)
+                        console.log(err);
+                    console.log('file deleted');
+                })
+            }
+
+            return this.response.sendSuccess(res, 'Submission sent successfully', order)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    finishOrder = async (req, res, next) => {
+        const { id: orderId } = req.params
+        const { userId: consumerId } = req.auth
+
+        try {
+            const order = await Order.findOneWhichBelongsToConsumer(orderId, consumerId)
+
+            await order.update({ status: STATUS.FINISHED })
+
+            const illustrator = await order.commission.getIllustrator()
+
+            const serviceFee = order.grandTotal * (5 / 100)
+            await illustrator.addBalance(order.grandTotal - serviceFee)
+
+            return this.response.sendSuccess(res, 'Order status updated', order)
+        } catch (error) {
+            next(error)
+        }
     }
 }
 

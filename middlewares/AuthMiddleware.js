@@ -1,3 +1,4 @@
+const { TokenExpiredError } = require("jsonwebtoken")
 const jwt = require("jsonwebtoken")
 const { jwt: jwtConfig } = require('../config/config')
 const { UnauthorizedError, ForbiddenError } = require("../errors")
@@ -30,7 +31,10 @@ class AuthMiddleware {
 
                 req.auth = { userId, userRole: role}
                 next()
-            } catch (errors) {
+            } catch (error) {
+                if (error instanceof TokenExpiredError)
+                    throw new UnauthorizedError('Token expired, please login again')
+                    
                 throw new UnauthorizedError('Token invalid')
             }
         }

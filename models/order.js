@@ -33,6 +33,20 @@ module.exports = (sequelize, DataTypes) => {
       return order
     }
 
+    static async findOneWhichBelongsToConsumer(orderId, consumerId) {
+      const order = await this.findOne({ 
+        where: { id: orderId },
+        include: ['detail', 'commission', 'consumer']
+      })
+      if (!order)
+        throw new NotFoundError()
+
+      if (order.consumer.id !== consumerId)
+        throw new ForbiddenError()
+
+      return order 
+    }
+
     toJSON() {
       return {
         ...this.get(),

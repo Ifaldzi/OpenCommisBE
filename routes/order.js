@@ -37,4 +37,24 @@ router.post(
     orderController.createPayment
 )
 
+router.post(
+    '/:id/send',
+    upload.single('submission_file'),
+    AuthMiddleware.handle(ROLE.ILLUSTRATOR),
+    orderController.sendSubmission
+)
+
+router.post(
+    '/:id/finish',
+    AuthMiddleware.handle(ROLE.CONSUMER),
+    orderController.finishOrder
+)
+
+router.post(
+    '/submission/upload',
+    upload.single('submission_file'),
+    AuthMiddleware.handle(),
+    orderController.uploadSubmissionFile
+)
+
 module.exports = { basePath: '/orders', router}
