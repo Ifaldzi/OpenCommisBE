@@ -81,7 +81,16 @@ class CommissionPostController extends Controller {
                 'category', 'tags', 'illustrator', 
                 {
                     association: 'reviews',
-                    required: false
+                    required: false,
+                    attributes: {
+                        exclude: ['commissionPostId', 'consumerId']
+                    },
+                    include: [
+                        {
+                            association: 'consumer',
+                            attributes: ['id', 'name', 'username', 'profilePicture']
+                        }
+                    ]
                 },
                 {
                     association: 'orders',
@@ -105,7 +114,6 @@ class CommissionPostController extends Controller {
                     ]
                 ]
             },
-            nested: true,
             group: ['tags.id', 'reviews.id'],
         })
 
