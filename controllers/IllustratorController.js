@@ -94,6 +94,17 @@ class IllustratorController extends Controller {
             next(error)
         }
     }
+
+    getBalance = async (req, res, next) => {
+        const { userId: illustratorId } = req.auth
+
+        const illustratorBalanceData = await Illustrator.findOne({
+            where: { id: illustratorId },
+            attributes: ['id', 'name', 'username', 'balance']
+        })
+
+        return this.response.sendSuccess(res, 'Fetch data success', illustratorBalanceData)
+    }
 }
 
 module.exports = new IllustratorController()

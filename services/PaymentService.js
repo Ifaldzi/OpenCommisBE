@@ -2,11 +2,12 @@ const Xendit = require('xendit-node')
 const { xenditSecretKey, redirectUrl } = require('../config/config')
 const { BadRequestError } = require('../errors')
 const xendit = new Xendit({ secretKey: xenditSecretKey})
-const { Invoice } = xendit
+const { Invoice, Disbursement } = xendit
 
 class PaymentService {
     constructor() {
         this.invoice = new Invoice({})
+        this.disbursement = new Disbursement()
     }
 
     static availablePaymentMethod = [
@@ -63,6 +64,25 @@ class PaymentService {
         })
 
         return response
+    }
+
+    async createDisbursement(illustratorData, amount, { bankCode, accountNumber, accountHolderName }) {
+        if (!accountHolderName)
+            accountHolderName = illustratorData.name
+        const response = await this.disbursement.create({
+            externalID: `withdraw-${illustratorData.id}-${Date.now()}`,
+            amount,
+            bankCode,
+            accountHolderName,
+            accountNumber,
+            description: 'Withdrawals to illustrator account, username: ' + illustratorData.username 
+        })
+
+        return response
+    }
+
+    async getAvailableDisbursementBanks() {
+        return await this.disbursement.getBanks()
     }
 }
 
