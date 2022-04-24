@@ -78,11 +78,16 @@ class CommissionPostController extends Controller {
                 id
             },
             include: [
-                'category', 'tags', 'illustrator', 'reviews',
+                'category', 'tags', 'illustrator', 
+                {
+                    association: 'reviews',
+                    required: false
+                },
                 {
                     association: 'orders',
                     attributes: [],
                     where: { status: STATUS.FINISHED },
+                    required: false
                 }
             ],
             attributes: {
