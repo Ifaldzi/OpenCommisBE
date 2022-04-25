@@ -14,9 +14,9 @@ class AuthMiddleware {
                 throw new UnauthorizedError()
             }
             
-            if (!authToken & !authHeader)
+            if (authHeader)
                 authToken = authHeader.split(' ')[1]
-            
+
             try {
                 const decodedAuthData = jwt.verify(authToken, jwtConfig.secretKey)
                 const {userId, role} = decodedAuthData
