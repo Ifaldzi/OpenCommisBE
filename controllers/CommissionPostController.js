@@ -56,7 +56,7 @@ class CommissionPostController extends Controller {
                 ]
             })
 
-            const count = await CommissionPost.count({where: {status: 'OPEN'}})
+            const count = await CommissionPost.count({where})
 
             const paginationData = this.#generatePaginationData(count, limit, page)
             

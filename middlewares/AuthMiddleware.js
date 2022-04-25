@@ -14,7 +14,7 @@ class AuthMiddleware {
                 throw new UnauthorizedError()
             }
             
-            if (!authToken)
+            if (!authToken & !authHeader)
                 authToken = authHeader.split(' ')[1]
             
             try {
