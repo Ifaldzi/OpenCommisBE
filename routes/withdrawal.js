@@ -21,4 +21,10 @@ router.get(
     withdrawalController.getAllBanksCode
 )
 
+router.get(
+    '/',
+    AuthMiddleware.handle(ROLE.ILLUSTRATOR),
+    withdrawalController.getWithdrawalsByIllustrator
+)
+
 module.exports = { basePath: '/withdrawals', router }

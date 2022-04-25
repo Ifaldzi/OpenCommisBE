@@ -73,6 +73,20 @@ class WithdrawalController extends Controller {
 
         this.response.sendSuccess(res, 'Fetch data success', banks)
     }
+
+    getWithdrawalsByIllustrator = async (req, res) => {
+        const { userId: illustratorId } = req.auth
+
+        const withdrawals = await Withdrawal.findAll({
+            where: { illustratorId },
+            attributes: {
+                exclude: ['illustratorId']
+            },
+            order: [['createdAt', 'DESC']]
+        })
+
+        return this.response.sendSuccess(res, 'Fetch data success', withdrawals)
+    }
 }
 
 module.exports = new WithdrawalController()
