@@ -3,25 +3,46 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class withdrawal extends Model {
+  class Withdrawal extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ Illustrator }) {
       // define association here
+      this.belongsTo(Illustrator, { as: 'illustrator', foreignKey: 'illustratorId' })
     }
   }
-  withdrawal.init({
-    destination: DataTypes.STRING,
-    account_number: DataTypes.STRING,
-    amount: DataTypes.DOUBLE,
-    disburse_ref_id: DataTypes.STRING
+  Withdrawal.init({
+    destination: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    accountNumber: {
+      type: DataTypes.STRING(30),
+      allowNull: false
+    },
+    amount: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
+    },
+    disburseRefId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    status: {
+      type: DataTypes.STRING(10),
+      allowNull: false
+    },
+    failureCode: {
+      type: DataTypes.STRING(25),
+      allowNull: true
+    }
   }, {
     sequelize,
-    modelName: 'withdrawal',
+    modelName: 'Withdrawal',
     underscored: true,
   });
-  return withdrawal;
+  return Withdrawal;
 };

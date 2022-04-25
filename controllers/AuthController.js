@@ -1,11 +1,11 @@
 const { Controller } = require("./Controller");
+const { BadRequestError } = require("../errors");
+const jwt = require('jsonwebtoken')
+const { jwt: jwtConfig } = require('../config/config')
 const { Illustrator, Consumer } = require('../models')
 const { createJWT } = require('../services/jwtService');
 const { CustomError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError } = require("../errors");
-const jwt = require('jsonwebtoken')
-const { jwt: jwtConfig } = require('../config/config')
 
 const ROLE = {
     ILLUSTRATOR: 'illustrator',

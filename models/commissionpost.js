@@ -5,6 +5,8 @@ const {
 const { baseUrl } = require('../config/config');
 const { ForbiddenError } = require('../errors');
 const NotFoundError = require('../errors/NotFoundError');
+const { STATUS } = require('../config/constants')
+const { Op } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
   class CommissionPost extends Model {
     /**
@@ -12,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ Illustrator, Category, Tag, Order }) {
+    static associate({ Illustrator, Category, Tag, Order, Review, Consumer }) {
       // define association here
       this.belongsTo(Illustrator, {as: 'illustrator'})
       this.belongsTo(Category, {as: 'category'})
@@ -23,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
       })
       this.hasMany(Order, { as: 'orders', foreignKey: 'commissionPostId' })
+      this.hasMany(Review, { as: 'reviews', foreignKey: 'commissionPostId' })
     }
 
     static async findOneByIdFromIllustrator(commissionId, illustratorId) {
@@ -50,6 +53,7 @@ module.exports = (sequelize, DataTypes) => {
 
       const profilePicture = ((substr = this.illustrator?.profilePicture?.substr(0, 4)) === 'http' || substr == undefined) ? this.illustrator?.profilePicture : `${baseUrl}/${this.illustrator?.profilePicture}`
 
+      // console.log(this.overallRating);
       return {
         ...this.get(),
         image_1: image_1,
@@ -62,6 +66,8 @@ module.exports = (sequelize, DataTypes) => {
           username: this.get().illustrator.username,
           profilePicture: profilePicture
         } : undefined,
+        overallRating: this.get('overallRating') !== undefined ? Number(this.get('overallRating')) : undefined,
+        ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
         categoryId: undefined,
         illustratorId: undefined
       }
@@ -123,6 +129,53 @@ module.exports = (sequelize, DataTypes) => {
           limit,
           offset: (page - 1) * limit,
           subQuery: false
+        }
+      },
+      withOverallRatingAndOrdersCompleted: {
+        include: [
+          {
+              association: 'reviews',
+              attributes: [],
+              required: false
+          },
+          {
+              association: 'orders',
+              attributes: [],
+              where: { status: STATUS.FINISHED },
+              required: false
+          }
+        ],
+        attributes: {
+            include: [
+                [sequelize.fn('AVG', sequelize.col('reviews.rating')), 'overallRating'],
+                [sequelize.literal('COUNT(DISTINCT(orders.id))'), 'ordersCompleted']
+            ]
+        },
+        group: ['CommissionPost.id'],
+      },
+      search: (q) => {
+        return {
+          where: {
+            [Op.or]: {
+                title: {
+                    [Op.regexp]: q
+                },
+                '$tags.tag_name$': {
+                    [Op.regexp]: q
+                }
+            },
+            status: 'OPEN'
+          },
+          include: [
+            {association: 'illustrator'},
+            {
+                association: "tags",
+                attributes: [],
+                through: {
+                    attributes: []
+                },
+            }
+          ],
         }
       }
     }

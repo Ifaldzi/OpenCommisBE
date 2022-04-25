@@ -1,10 +1,11 @@
 const { Controller } = require('./Controller')
-const { CommissionPost, Category, Tag } = require('../models')
+const { CommissionPost, Category, Tag, sequelize } = require('../models')
 const { pagination, path, baseUrl } = require('../config/config')
 const NotFoundError = require('../errors/NotFoundError')
 const { Op } = require('sequelize')
 const { StatusCodes } = require('http-status-codes')
 const { ForbiddenError } = require('../errors')
+const { STATUS } = require('../config/constants')
 const fs = require('fs').promises
 
 class CommissionPostController extends Controller {
@@ -26,22 +27,42 @@ class CommissionPostController extends Controller {
             where.categoryId = category
 
         try {
-            const commissionPosts = await CommissionPost.scope({method: ['pagination', limit, page]}).findAndCountAll({
+            const commissionPosts = await CommissionPost.scope({method: ['pagination', limit, page]}).findAll({
                 where: where,
-                distinct: true,
-                include: ['illustrator']
+                include: [
+                    {association: 'illustrator'},
+                    {
+                        association: 'reviews',
+                        attributes: [],
+                        required: false
+                    },
+                    {
+                        association: 'orders',
+                        attributes: [],
+                        where: { status: STATUS.FINISHED },
+                        required: false
+                    }
+                ],
+                attributes: {
+                    include: [
+                        [sequelize.fn('AVG', sequelize.col('reviews.rating')), 'overallRating'],
+                        [sequelize.literal('COUNT(DISTINCT(orders.id))'), 'ordersCompleted']
+                    ]
+                },
+                group: ['CommissionPost.id'],
+                order: [
+                    [sequelize.literal('overallRating'), 'DESC'],
+                    [sequelize.literal('ordersCompleted'), 'DESC']
+                ]
             })
 
-            const paginationData = {
-                totalData: commissionPosts.count,
-                totalPage: Math.ceil(commissionPosts.count / limit),
-                pageSize: limit,
-                currentPage: page
-            }
+            const count = await CommissionPost.count({where: {status: 'OPEN'}})
+
+            const paginationData = this.#generatePaginationData(count, limit, page)
             
             return this.response.sendSuccess(res, 'Fetch data success', {
                 pagination: paginationData,
-                commissionPosts: commissionPosts.rows, 
+                commissionPosts: commissionPosts, 
             })
         } catch (errors) {
             console.log(errors);
@@ -56,7 +77,44 @@ class CommissionPostController extends Controller {
             where: {
                 id
             },
-            include: ['category', 'tags', 'illustrator']
+            include: [
+                'category', 'tags', 'illustrator', 
+                {
+                    association: 'reviews',
+                    required: false,
+                    attributes: {
+                        exclude: ['commissionPostId', 'consumerId']
+                    },
+                    include: [
+                        {
+                            association: 'consumer',
+                            attributes: ['id', 'name', 'username', 'profilePicture']
+                        }
+                    ]
+                },
+                {
+                    association: 'orders',
+                    attributes: [],
+                    where: { status: STATUS.FINISHED },
+                    required: false
+                }
+            ],
+            attributes: {
+                include: [
+                    [sequelize.literal('COUNT(DISTINCT(orders.id))'), 'ordersCompleted'],
+                    [
+                        sequelize.literal(`(
+                            SELECT AVG(reviews.rating)
+                            FROM reviews
+                            WHERE
+                                reviews.commission_post_id = CommissionPost.id
+                        )`)
+                        ,
+                        'overallRating'
+                    ]
+                ]
+            },
+            group: ['tags.id', 'reviews.id'],
         })
 
         if (!commission)
@@ -73,7 +131,10 @@ class CommissionPostController extends Controller {
 
         const wordsToFind = keyword.split(' ').join('|')
 
-        const commissions = await CommissionPost.scope({method: ['pagination', limit, page]}).findAndCountAll({
+        const commissions = await CommissionPost.scope(
+            'withOverallRatingAndOrdersCompleted', 
+            {method: ['pagination', limit, page]}
+        ).findAll({
             where: {
                 [Op.or]: {
                     title: {
@@ -82,7 +143,8 @@ class CommissionPostController extends Controller {
                     '$tags.tag_name$': {
                         [Op.regexp]: wordsToFind
                     }
-                }
+                },
+                status: 'OPEN'
             },
             include: [
                 {association: 'illustrator'},
@@ -94,21 +156,28 @@ class CommissionPostController extends Controller {
                     },
                 }
             ],
-            distinct: true
+            order: [
+                [sequelize.literal('overallRating'), 'DESC'],
+                [sequelize.literal('ordersCompleted'), 'DESC']
+            ]
         })
+        console.log(commissions);
+        const dataCount = await CommissionPost
+            .scope({method: ['search', wordsToFind]})
+            .count({ distinct: true, col: 'CommissionPost.id' })
 
-        const paginationData = this.#generatePaginationData(commissions, limit, page)
+        const paginationData = this.#generatePaginationData(dataCount, limit, page)
 
         this.response.sendSuccess(res, 'Fetch data success', {
             pagination: paginationData,
-            commissionPosts: commissions.rows,
+            commissionPosts: commissions,
         })
     }
 
-    #generatePaginationData(data, limit, page){
+    #generatePaginationData(dataCount, limit, page){
         return {
-            totalData: data.count,
-            totalPage: Math.ceil(data.count / limit),
+            totalData: dataCount,
+            totalPage: Math.ceil(dataCount / limit),
             pageSize: limit,
             currentPage: page
         }
@@ -153,7 +222,7 @@ class CommissionPostController extends Controller {
     getAllCommissionPostBelongToAuthenticatedUser = async (req, res, next) => {
         const illustratorId = req.auth.userId
 
-        const commissions = await CommissionPost.findAll({
+        const commissions = await CommissionPost.scope('defaultScope', 'withOverallRatingAndOrdersCompleted').findAll({
             where: {
                 illustratorId
             }
