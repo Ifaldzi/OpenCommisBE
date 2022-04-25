@@ -40,4 +40,10 @@ router.post(
     illustratorController.updatePortfolio
 )
 
+router.get(
+    '/balance',
+    AuthMiddleware.handle(ROLE.ILLUSTRATOR),
+    illustratorController.getBalance
+)
+
 module.exports = { basePath: '/illustrator', router}

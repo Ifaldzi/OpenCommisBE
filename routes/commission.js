@@ -2,6 +2,7 @@ const { Router } = require('express')
 const { ROLE } = require('../config/constants')
 const commissionPostController = require('../controllers/CommissionPostController')
 const orderController = require('../controllers/OrderController')
+const reviewController = require('../controllers/ReviewController')
 const authMiddleware = require('../middlewares/AuthMiddleware')
 const upload = require('../middlewares/uploadMiddleware')
 const router = Router()
@@ -34,6 +35,17 @@ router.get(
     '/:id/orders',
     authMiddleware.handle(ROLE.ILLUSTRATOR),
     orderController.getOrdersByCommissionId
+)
+
+router.post(
+    '/:id/reviews',
+    authMiddleware.handle(ROLE.CONSUMER),
+    reviewController.addReview
+)
+
+router.get(
+    '/:id/reviews',
+    reviewController.getAllReviewsByCommission
 )
 
 module.exports = {basePath: '/commissions', router}

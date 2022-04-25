@@ -4,6 +4,7 @@ module.exports = {
     port: process.env.PORT || 3000,
     baseUrl: process.env.BASE_URL || 'http://127.0.0.1:5000',
     enviroment: process.env.NODE_ENV || 'development',
+    xenditSecretKey: process.env.XENDIT_SECRET_KEY,
     hash: {
         saltRounds: Number(process.env.SALT_ROUNDS || 10)
     },
@@ -26,5 +27,9 @@ module.exports = {
         port: process.env.MAIL_PORT,
         username: process.env.MAIL_USERNAME,
         password: process.env.MAIL_PASSWORD
+    },
+    redirectUrl: {
+        paymentSuccess: process.env.PAYMENT_SUCCESS_URL,
+        paymentFailure: process.env.PAYMENT_FAILURE_URL
     }
 }
