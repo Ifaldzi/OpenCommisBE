@@ -5,6 +5,7 @@ module.exports = {
     baseUrl: process.env.BASE_URL || 'http://127.0.0.1:5000',
     enviroment: process.env.NODE_ENV || 'development',
     xenditSecretKey: process.env.XENDIT_SECRET_KEY,
+    feBaseUrl: process.env.FE_BASE_URL || 'http://127.0.0.1:3000',
     hash: {
         saltRounds: Number(process.env.SALT_ROUNDS || 10)
     },

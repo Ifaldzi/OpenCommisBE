@@ -1,5 +1,5 @@
 const Xendit = require('xendit-node')
-const { xenditSecretKey, redirectUrl } = require('../config/config')
+const { xenditSecretKey, redirectUrl, feBaseUrl } = require('../config/config')
 const { BadRequestError } = require('../errors')
 const xendit = new Xendit({ secretKey: xenditSecretKey})
 const { Invoice, Disbursement } = xendit
@@ -52,7 +52,7 @@ class PaymentService {
         const response = await this.invoice.createInvoice({
             externalID: 'order-' + orderData.id + `-${Date.now()}`,
             amount: amount,
-            successRedirectURL: redirectUrl.paymentSuccess,
+            successRedirectURL: `${feBaseUrl}/consumer/order/${orderData.id}`,
             failureRedirectURL: redirectUrl.paymentFailure,
             paymentMethods: paymentMethods.methods,
             fees: [

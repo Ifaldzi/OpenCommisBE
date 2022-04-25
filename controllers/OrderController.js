@@ -76,6 +76,7 @@ class OrderController extends Controller {
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {consumerId: userId},
                     include: ['consumer', 'commission'],
+                    order: [['orderDate', 'DESC']],
                     distinct: true
                 })
                 break;
@@ -83,6 +84,7 @@ class OrderController extends Controller {
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {'$commission.illustrator_id$': userId},
                     include: ['consumer', 'commission'],
+                    order: [['orderDate', 'DESC']],
                     distinct: true
                 })
                 break;
