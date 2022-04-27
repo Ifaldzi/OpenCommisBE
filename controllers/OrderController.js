@@ -97,10 +97,27 @@ class OrderController extends Controller {
 
     getDetailOrder = async (req, res) => {
         const { id: orderId } = req.params
+        const { userRole: role } = req.auth
+        
+        const includeStatement = ['detail', 'payment']
+
+        if (role == ROLE.CONSUMER) {
+            includeStatement.push({
+                association: 'commission',
+                include : [{
+                    association: 'illustrator',
+                    attributes: {
+                        exclude: ['balance']
+                    }
+                }],
+            })
+        } else {
+            includeStatement.push('consumer', 'commission')
+        }
 
         const order = await Order.findOne({
             where: {id: orderId},
-            include: ['detail', 'consumer', 'commission', 'payment']
+            include: includeStatement,
         })
 
         if (!order)
