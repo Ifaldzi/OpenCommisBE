@@ -16,10 +16,13 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     toJSON() {
+      let substr
+      const referenceImage = ((substr = this.referenceImage?.substr(0, 4)) == 'http' || substr == undefined) ? this.referenceImage : `${baseUrl}/${this.referenceImage}`
+
       return {
         ...this.get(),
         orderId: undefined,
-        referenceImage: this.referenceImage !== null ? `${baseUrl}/${this.referenceImage}` : null
+        referenceImage: referenceImage
       }
     }
   }

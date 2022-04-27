@@ -4,6 +4,7 @@ const {
 } = require('sequelize');
 const bcrypt = require('bcrypt')
 const { hash } = require('../config/config')
+const { baseUrl } = require('../config/config')
 module.exports = (sequelize, DataTypes) => {
   class Consumer extends Model {
     /**
@@ -18,8 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     toJSON() {
+      let substr
+      const profilePicture = ((substr = this.profilePicture?.substr(0, 4)) == 'http' || substr == undefined) ? this.profilePicture : `${baseUrl}/${this.profilePicture}`
+
       return {
         ...this.get(),
+        profilePicture: profilePicture,
         password: undefined,
         activationToken: undefined
       }
