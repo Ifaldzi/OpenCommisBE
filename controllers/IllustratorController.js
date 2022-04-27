@@ -1,9 +1,10 @@
 const { Controller } = require('./Controller')
-const { Illustrator, Artwork, Portfolio } = require('../models')
+const { Illustrator, Artwork, Portfolio, sequelize } = require('../models')
 const NotFoundError = require('../errors/NotFoundError')
 const { moveFile, deleteFile } = require('../services/fileService')
 const { path } = require('../config/config')
 const { StatusCodes } = require('http-status-codes')
+const { STATUS } = require('../config/constants')
 
 class IllustratorController extends Controller {
     constructor() {
@@ -19,7 +20,22 @@ class IllustratorController extends Controller {
             where: {
                 id: illustratorId
             },
-            include: ['portfolio', 'artworks']
+            include: [
+                'portfolio', 'artworks', 'commissions',
+            ],
+            attributes: {
+                include: [
+                    [sequelize.literal(`(
+                        SELECT COUNT(orders.id)
+                        FROM orders
+                        JOIN commission_posts as c ON c.id = orders.commission_post_id
+                        WHERE
+                            c.illustrator_id = Illustrator.id AND
+                            orders.status = 'FINISHED'
+                    )`), 
+                    'ordersCompleted']
+                ]
+            }
         })
 
         if (!portfolio)

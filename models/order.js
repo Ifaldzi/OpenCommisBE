@@ -50,6 +50,11 @@ module.exports = (sequelize, DataTypes) => {
     toJSON() {
       return {
         ...this.get(),
+        commission: this.commission !== undefined ? {
+          ...this.commission.get(),
+          illustrator: undefined
+        } : undefined,
+        illustrator: this.commission?.illustrator,
         commissionPostId: undefined,
         consumerId: undefined
       }
