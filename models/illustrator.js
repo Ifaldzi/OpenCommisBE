@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate({CommissionPost, Portfolio, Artwork, Withdrawal}) {
       // define association here
-      this.hasMany(CommissionPost, {as: 'commissionPosts'})
+      this.hasMany(CommissionPost, {as: 'commissions'})
       this.hasOne(Portfolio, { as: 'portfolio', foreignKey: 'illustrator_id' })
       this.hasMany(Artwork, { as: 'artworks' })
       this.hasMany(Withdrawal, { as: 'withdrawals', foreignKey: 'illustratorId' })
@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
 
       return {
         ...this.get(),
+        ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
         password: undefined,
         activationToken: undefined,
         profilePicture: profilePicture
