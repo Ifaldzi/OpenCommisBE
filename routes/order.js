@@ -3,6 +3,7 @@ const { ROLE } = require("../config/constants");
 const orderController = require("../controllers/OrderController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
+const reviewController = require('../controllers/ReviewController')
 
 const router = Router()
 
@@ -48,6 +49,12 @@ router.post(
     '/:id/finish',
     AuthMiddleware.handle(ROLE.CONSUMER),
     orderController.finishOrder
+)
+
+router.post(
+    '/:id/review',
+    AuthMiddleware.handle(ROLE.CONSUMER),
+    reviewController.addReview
 )
 
 router.post(

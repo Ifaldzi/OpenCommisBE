@@ -1,5 +1,5 @@
 const { Controller } = require("./Controller");
-const { CommissionPost, Review } = require('../models');
+const { CommissionPost, Review, Order } = require('../models');
 const NotFoundError = require("../errors/NotFoundError");
 
 class ReviewController extends Controller {
@@ -8,22 +8,25 @@ class ReviewController extends Controller {
     }
 
     addReview = async (req, res, next) => {
-        const { id: commissionId } = req.params
+        const { id: orderId } = req.params
         const { userId: consumerId } = req.auth
         const { rating, comment } = req.body
 
-        const commission = await CommissionPost.findOne({ where: { id: commissionId } })
+        // const commission = await CommissionPost.findOne({ where: { id: commissionId } })
+        const order = await Order.findOne({ where: { id: orderId }, include: ['commission'] })
 
-        if (!commission)
+        if (!order)
             throw new NotFoundError()
 
         try {
             const review = await Review.create({
                 consumerId,
-                commissionPostId: Number(commissionId),
+                commissionPostId: order.commission.id,
                 rating,
                 comment
             })
+
+            await order.update({ reviewed: true })
 
             return this.response.sendSuccess(res, 'Review added', review)
         } catch (error) {
