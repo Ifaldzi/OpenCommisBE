@@ -37,11 +37,11 @@ router.get(
     orderController.getOrdersByCommissionId
 )
 
-router.post(
-    '/:id/reviews',
-    authMiddleware.handle(ROLE.CONSUMER),
-    reviewController.addReview
-)
+// router.post(
+//     '/:id/reviews',
+//     authMiddleware.handle(ROLE.CONSUMER),
+//     reviewController.addReview
+// )
 
 router.get(
     '/:id/reviews',
