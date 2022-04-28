@@ -12,7 +12,6 @@ class ReviewController extends Controller {
         const { userId: consumerId } = req.auth
         const { rating, comment } = req.body
 
-        // const commission = await CommissionPost.findOne({ where: { id: commissionId } })
         const order = await Order.findOne({ where: { id: orderId }, include: ['commission'] })
 
         if (!order)
