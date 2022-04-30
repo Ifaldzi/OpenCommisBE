@@ -1,13 +1,14 @@
 const { Controller } = require("./Controller");
 const { BadRequestError } = require("../errors");
 const jwt = require('jsonwebtoken')
-const { jwt: jwtConfig, verificationRedirect } = require('../config/config')
+const { jwt: jwtConfig, verificationRedirect, path } = require('../config/config')
 const { Illustrator, Consumer } = require('../models')
 const { createJWT } = require('../services/jwtService');
 const { CustomError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const MailService = require("../services/MailService");
 const NotFoundError = require("../errors/NotFoundError");
+const { moveFileWithPath } = require("../services/fileService");
 
 const ROLE = {
     ILLUSTRATOR: 'illustrator',
@@ -58,6 +59,14 @@ class AuthController extends Controller {
         userData.activationToken = verificationToken
 
         try {
+            const { profilePicture } = userData
+
+            if (profilePicture) {
+                const filePath = await moveFileWithPath(profilePicture, path.profilePicture)
+
+                userData.profilePicture = filePath
+            }
+
             let user
             switch (role) {
                 case 'illustrator':
