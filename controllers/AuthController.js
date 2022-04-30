@@ -1,11 +1,13 @@
 const { Controller } = require("./Controller");
 const { BadRequestError } = require("../errors");
 const jwt = require('jsonwebtoken')
-const { jwt: jwtConfig } = require('../config/config')
+const { jwt: jwtConfig, verificationRedirect } = require('../config/config')
 const { Illustrator, Consumer } = require('../models')
 const { createJWT } = require('../services/jwtService');
 const { CustomError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
+const MailService = require("../services/MailService");
+const NotFoundError = require("../errors/NotFoundError");
 
 const ROLE = {
     ILLUSTRATOR: 'illustrator',
@@ -15,6 +17,7 @@ const ROLE = {
 class AuthController extends Controller {
     constructor() {
         super()
+        this.mailService = new MailService()
     }
 
     login = async (req, res, next) => {
@@ -50,6 +53,10 @@ class AuthController extends Controller {
         const {role} = req.params
         const userData = req.body
 
+        const verificationToken = createJWT(null, null, '10m')
+
+        userData.activationToken = verificationToken
+
         try {
             let user
             switch (role) {
@@ -63,6 +70,7 @@ class AuthController extends Controller {
                     next()
                     break;
             }
+            this.mailService.sendEmailVerificationMail(user.email, {token: verificationToken, role})
             return this.response.sendSuccess(res, "Register user success", {user, role})
         } catch(error) {
             next(error)
@@ -91,6 +99,68 @@ class AuthController extends Controller {
         } catch (errors) {
             return this.response.sendSuccess(res, "Token invalid", { tokenValid: false, role: null })
         }
+    }
+
+    verifyEmail = async (req, res, next) => {
+        const { token, role } = req.query
+
+        let user
+        switch (role) {
+            case ROLE.ILLUSTRATOR:
+                user = await Illustrator.findOne({ where: { activationToken: token } })
+                break;
+            case ROLE.CONSUMER:
+                user = await Consumer.findOne({ where: { activationToken: token } })
+                break;
+        }
+
+        if (!user)
+            return res.redirect(verificationRedirect.failed) //ToDo: change to failed verify url in FE
+
+        try {
+            const decoded = jwt.verify(token, jwtConfig.secretKey)
+
+            await user.update({ emailVerified: true, activationToken: null })
+            return res.redirect(verificationRedirect.success)
+        } catch(error) {
+            return res.redirect(verificationRedirect.failed)
+        }
+    }
+
+    resendVerificationEmail = async (req, res, next) => {
+        const { id, role } = req.params
+        console.log(id, role);
+
+        const user = await this.#findUser(role, { id: id })
+
+        console.log(user);
+
+        if (!user)
+            throw new NotFoundError('User not found')
+
+        const activationToken = createJWT(null, null, '10m')
+
+        try {
+            await user.update({ activationToken })
+            this.mailService.sendEmailVerificationMail(user.email, { token: activationToken, role })
+            return this.response.sendSuccess(res, 'Verification mail has been sent', null)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async #findUser(role, whereStatement) {
+        let user
+        switch (role) {
+            case ROLE.ILLUSTRATOR:
+                user = await Illustrator.findOne({ where: whereStatement })
+                break;
+            case ROLE.CONSUMER:
+                user = await Consumer.findOne({ where: whereStatement })
+                break;
+        }
+
+        return user
     }
 }
 
