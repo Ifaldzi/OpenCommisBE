@@ -7,8 +7,18 @@ const moveFile = async (file, path) => {
     return filepath
 }
 
+const moveFileWithPath = async (from, to) => {
+    const fileName = from.split('\\').pop()
+    const newPath = to + fileName
+    console.log(fileName, newPath);
+
+    await fs.rename(from, `public/${newPath}`)
+
+    return newPath
+}
+
 const deleteFile = async (path) => {
     await fs.unlink('public/' + path)
 }
 
-module.exports = {moveFile, deleteFile}
+module.exports = {moveFile, deleteFile, moveFileWithPath}

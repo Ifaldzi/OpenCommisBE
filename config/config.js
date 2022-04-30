@@ -6,6 +6,10 @@ module.exports = {
     enviroment: process.env.NODE_ENV || 'development',
     xenditSecretKey: process.env.XENDIT_SECRET_KEY,
     feBaseUrl: process.env.FE_BASE_URL || 'http://127.0.0.1:3000',
+    verificationRedirect: {
+        success: process.env.VERIFICATION_SUCCESS_URL,
+        failed: process.env.VERIFICATION_FAILURE_URL
+    },
     hash: {
         saltRounds: Number(process.env.SALT_ROUNDS || 10)
     },

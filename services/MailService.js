@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer')
-const { mail } = require('../config/config')
+const { mail, baseUrl } = require('../config/config')
 
 class MailService {
     #transporter
@@ -95,6 +95,15 @@ class MailService {
             `Pesanan ${orderData.id} Telah Dikirimkan, Segera Lakukan Konfirmasi`,
             `<h3>Pesananan mu dengan order-id: ${orderData.id} telah dikirimkan oleh illustrator</h3><p>Catatan dari illustrator: ${description}</p><p>${submisionNote}</p>`,
             attachments
+        )
+    }
+
+    async sendEmailVerificationMail(to, { token, role }) {
+        const verificationLink = `${baseUrl}/api/auth/verify?token=${token}&role=${role}`
+        await this.sendNotification(
+            to,
+            'Verifikasi Email Anda Segera',
+            `<h3>Veririkasi email anda untuk menggunakan aplikasi Open Commiss dengan mengklik tautan berikut</h3><p><a href="${verificationLink}">${verificationLink}</a></p>`
         )
     }
 }
