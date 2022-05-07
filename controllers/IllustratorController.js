@@ -52,7 +52,7 @@ class IllustratorController extends Controller {
                     'ordersCompleted']
                 ]
             },
-            group: ['artworks.id', 'commissions.id']
+            group: ['artworks.id', 'commissions.id', 'bio', 'instagram_acc', 'twitter_acc', 'facebook_acc']
         })
 
         if (!portfolio)
