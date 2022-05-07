@@ -52,7 +52,7 @@ class PaymentService {
         const response = await this.invoice.createInvoice({
             externalID: 'order-' + orderData.id + `-${Date.now()}`,
             amount: amount,
-            successRedirectURL: `${feBaseUrl}/consumer/order/${orderData.id}`,
+            successRedirectURL: `${feBaseUrl}/consumer/order/${orderData.id}/payment-success`,
             failureRedirectURL: redirectUrl.paymentFailure,
             paymentMethods: paymentMethods.methods,
             fees: [
