@@ -21,7 +21,23 @@ class IllustratorController extends Controller {
                 id: illustratorId
             },
             include: [
-                'portfolio', 'artworks', 'commissions',
+                'portfolio', 'artworks', 
+                {
+                    association: 'commissions',
+                    include: [
+                        {
+                            association: 'reviews',
+                            attributes: [],
+                            required: false
+                        }
+                    ],
+                    attributes: {
+                        include: [
+                            [sequelize.fn('AVG', sequelize.col('commissions.reviews.rating')), 'overallRating']
+                        ],
+                        exclude: ['CategoryId', 'IllustratorId']
+                    },
+                },
             ],
             attributes: {
                 include: [
@@ -35,7 +51,8 @@ class IllustratorController extends Controller {
                     )`), 
                     'ordersCompleted']
                 ]
-            }
+            },
+            group: ['artworks.id', 'commissions.id']
         })
 
         if (!portfolio)
