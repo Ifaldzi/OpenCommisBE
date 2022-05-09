@@ -20,10 +20,7 @@ class Server {
         this.#app = express()
         this.#port = config.port
 
-        this.#app.use(cors({
-            origin: 'http://localhost:3000',
-            credentials: true
-        }))
+        this.#adjustCORS()
 
         this.#app.use(express.static('./public'))
         this.#app.use(express.json())
@@ -33,6 +30,18 @@ class Server {
 
         this.#app.use(notFound)
         this.#app.use(errorHandler)
+    }
+
+    #adjustCORS() {
+        const origins = [config.feBaseUrl]
+        if (config.enviroment !== 'production')
+            origins.push('http://localhost:3000')
+
+        console.log(origins);
+        this.#app.use(cors({
+            origin: origins,
+            credentials: true
+        }))
     }
 
     run() {
