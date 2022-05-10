@@ -13,8 +13,10 @@ class PaymentController extends Controller {
         const { id, external_id: externalId, paid_at: paidAt, payment_channel: paymentChannel, status} = req.body
 
         const orderId = externalId.split('-')[1]
-        const order = await Order.findOne({where: {id: orderId}, include: ['payment', 'commission', 'consumer']})
-        // console.log(order.payment);
+        const order = await Order.findOne({where: {id: orderId}, include: [
+            'payment', { association: 'commission', paranoid: false }, 'consumer'
+        ]})
+        
         try {
             if (status === 'PAID') {
                 await order.update({

@@ -71,19 +71,26 @@ class OrderController extends Controller {
 
         const OrderWithPagination = Order.scope({method: ['pagination', limit, page]})
         let orders
+        const includeStatements = [
+            'consumer',
+            {
+                association: 'commission',
+                paranoid: false
+            }
+        ]
         switch (role) {
             case ROLE.CONSUMER:
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {consumerId: userId},
-                    include: ['consumer', 'commission'],
+                    include: includeStatements,
                     order: [['orderDate', 'DESC']],
-                    distinct: true
+                    distinct: true,
                 })
                 break;
             case ROLE.ILLUSTRATOR:
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {'$commission.illustrator_id$': userId},
-                    include: ['consumer', 'commission'],
+                    include: includeStatements,
                     order: [['orderDate', 'DESC']],
                     distinct: true
                 })
@@ -110,9 +117,10 @@ class OrderController extends Controller {
                         exclude: ['balance']
                     }
                 }],
+                paranoid: false
             })
         } else {
-            includeStatement.push('consumer', 'commission')
+            includeStatement.push('consumer', { association: 'commission', paranoid: false })
         }
 
         const order = await Order.findOne({

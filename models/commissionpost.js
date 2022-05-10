@@ -69,7 +69,8 @@ module.exports = (sequelize, DataTypes) => {
         overallRating: this.get('overallRating') !== undefined ? Number(this.get('overallRating')) : undefined,
         ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
         categoryId: undefined,
-        illustratorId: undefined
+        illustratorId: undefined,
+        deletedAt: undefined
       }
     }
   }
@@ -115,16 +116,17 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'CommissionPost',
     underscored: true,
+    paranoid: true,
     defaultScope: {
       attributes: {
-        exclude: ['CategoryId', 'IllustratorId']
+        exclude: ['CategoryId', 'IllustratorId', 'deletedAt']
       }
     },
     scopes: {
       pagination: (limit, page) => {
         return {
           attributes: {
-            exclude: ['CategoryId', 'IllustratorId']
+            exclude: ['CategoryId', 'IllustratorId', 'deletedAt']
           },
           limit,
           offset: (page - 1) * limit,
