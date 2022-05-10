@@ -5,10 +5,10 @@ class Controller {
         this.response = response
     }
 
-    generatePaginationData(data, limit, page){
+    generatePaginationData(dataCount, limit, page){
         return {
-            totalData: data.count,
-            totalPage: Math.ceil(data.count / limit),
+            totalData: dataCount,
+            totalPage: Math.ceil(dataCount / limit),
             pageSize: limit,
             currentPage: page
         }

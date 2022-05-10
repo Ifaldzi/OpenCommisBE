@@ -90,7 +90,7 @@ class OrderController extends Controller {
                 break;
         }
 
-        const paginationData = super.generatePaginationData(orders, limit, page)
+        const paginationData = this.generatePaginationData(orders.count, limit, page)
 
         return this.response.sendSuccess(res, "Fetch data success", {pagination: paginationData, orders: orders.rows})
     }
@@ -176,7 +176,7 @@ class OrderController extends Controller {
             distinct: true
         })
 
-        const paginationData = this.generatePaginationData(orders, limit, page)
+        const paginationData = this.generatePaginationData(orders.count, limit, page)
 
         return this.response.sendSuccess(res, "Fetch data success", { pagination: paginationData, orders: orders.rows})
     }

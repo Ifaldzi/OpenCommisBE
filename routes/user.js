@@ -10,4 +10,10 @@ router.get(
     userController.getAuthenticatedUserProfile
 )
 
+router.get(
+    '/',
+    AuthMiddleware.handle(),
+    userController.getAllUsers
+)
+
 module.exports = { basePath: '/users', router}
