@@ -7,7 +7,7 @@ class UserService {
     #unionQuery
 
     constructor () {
-        const select = 'name, username, email, phone, profile_picture AS profilePicture, created_at AS createdAt'
+        const select = 'name, username, email, phone, profile_picture AS profilePicture, created_at AS createdAt, deleted_at AS deletedAt'
         this.#unionQuery = `(
             SELECT id, 'illustrator' as role, ${select} FROM illustrators
             UNION
@@ -67,8 +67,8 @@ class UserService {
                     if (where[item]) {
                         if (where[item] instanceof Object) {
                             const operator = Object.keys(where[item])[0]
-                            if (where[item][operator] !== '%undefined%')
-                                whereQuery.push(`${item} ${operator} '${where[item][operator]}'`)
+                            if (where[item][operator] !== "'%undefined%'")
+                                whereQuery.push(`${item} ${operator} ${where[item][operator]}`)
                         } else
                             whereQuery.push(`${item}='${where[item]}'`)
                     }

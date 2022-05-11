@@ -53,7 +53,7 @@ class OrderController extends Controller {
 
             await order.reload({include: ['detail', 'consumer', 'commission']})
 
-            const illustrator = await order.commission.getIllustrator()
+            const illustrator = await order.commission.getIllustrator({ paranoid: false })
 
             this.mailService.sendNotification(illustrator.email, 'Ada pesanan masuk, segera lakukan konfirmasi')
 
@@ -72,7 +72,10 @@ class OrderController extends Controller {
         const OrderWithPagination = Order.scope({method: ['pagination', limit, page]})
         let orders
         const includeStatements = [
-            'consumer',
+            {
+                association: 'consumer',
+                paranoid: false
+            },
             {
                 association: 'commission',
                 paranoid: false
@@ -115,12 +118,15 @@ class OrderController extends Controller {
                     association: 'illustrator',
                     attributes: {
                         exclude: ['balance']
-                    }
+                    },
+                    paranoid: false
                 }],
                 paranoid: false
             })
         } else {
-            includeStatement.push('consumer', { association: 'commission', paranoid: false })
+            includeStatement.push(
+                {association: 'consumer', paranoid: false}, 
+                { association: 'commission', paranoid: false })
         }
 
         const order = await Order.findOne({
@@ -180,7 +186,7 @@ class OrderController extends Controller {
                 [Sequelize.literal("status='FAILED',status='FINISHED',status='DENIED',status='SENT',status='NOT_PAID',status='ACCEPTED',status='ON_WORK',status='CREATED'"), 'ASC'],
                 ['orderDate', 'ASC'],
             ],
-            include: ['consumer'],
+            include: [{ association: 'consumer', paranoid: false }],
             distinct: true
         })
 
@@ -264,7 +270,7 @@ class OrderController extends Controller {
 
             await order.update({ status: STATUS.FINISHED })
 
-            const illustrator = await order.commission.getIllustrator()
+            const illustrator = await order.commission.getIllustrator({ paranoid: false })
 
             const serviceFee = order.grandTotal * (5 / 100)
             await illustrator.addBalance(order.grandTotal - serviceFee)

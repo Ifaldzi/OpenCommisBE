@@ -15,10 +15,20 @@ class DashboardController extends Controller {
 
         const orders = await Order.scope({method: ['pagination', limit, page]}).findAndCountAll({
             include: [
-                'consumer', 'payment', {
+                {
+                    association: 'consumer',
+                    paranoid: false
+                }, 
+                'payment', 
+                {
                     association: 'commission',
                     paranoid: false,
-                    include: ['illustrator']
+                    include: [
+                        {
+                            association: 'illustrator',
+                            paranoid: false
+                        }
+                    ]
                 }
             ],
             order: [['orderDate', 'DESC']],
@@ -73,7 +83,10 @@ class DashboardController extends Controller {
                                 .scope({ method: ['pagination', limit, page] })
                                 .findAndCountAll({
                                     include: [
-                                        'illustrator',
+                                        {
+                                            association: 'illustrator',
+                                            required: true
+                                        },
                                         {
                                             association: "tags",
                                             attributes: [],

@@ -26,7 +26,8 @@ module.exports = (sequelize, DataTypes) => {
         ...this.get(),
         profilePicture: profilePicture,
         password: undefined,
-        activationToken: undefined
+        activationToken: undefined,
+        deletedAt: undefined
       }
     }
 
@@ -75,6 +76,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Consumer',
     underscored: true,
+    paranoid: true
   });
 
   Consumer.beforeCreate(async (consumer, options) => {

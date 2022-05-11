@@ -4,6 +4,8 @@ const { Consumer, Illustrator } = require('../models');
 const UserService = require("../services/UserService");
 const { Op } = require("sequelize");
 const { pagination } = require("../config/config");
+const { BadRequestError } = require("../errors");
+const NotFoundError = require("../errors/NotFoundError");
 
 class UserController extends Controller {
     constructor() {
@@ -33,7 +35,8 @@ class UserController extends Controller {
 
         const where = { 
             role: role, 
-            username: { 'like': `%${q}%` } 
+            username: { 'like': `'%${q}%'` },
+            deletedAt: { 'is': null }
         }
 
         const users = await this.userService.findAll({ 
@@ -47,6 +50,35 @@ class UserController extends Controller {
         const paginationData = this.generatePaginationData(totalUsers, limit, page)
 
         return this.response.sendSuccess(res, 'Fetch data success', {pagination: paginationData, users})
+    }
+
+    deleteUser = async (req, res, next) => {
+        const { role, id: userId } = req.params
+
+        let user
+        const where = { id: userId }
+        switch (role) {
+            case ROLE.ILLUSTRATOR:
+                user = await Illustrator.findOne({ where })
+                break;
+            case ROLE.CONSUMER:
+                user = await Consumer.findOne({ where })
+                break;
+            default:
+                throw new BadRequestError('Role not valid (illustrator & consumer only)')
+                break;
+        }
+
+        if (!user)
+            throw new NotFoundError()
+
+        try {
+            await user.destroy()
+
+            return this.response.sendSuccess(res, 'User deleted successfull', null)
+        } catch (error) {
+            next(error)
+        }
     }
 }
 

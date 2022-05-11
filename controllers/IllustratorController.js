@@ -28,6 +28,13 @@ class IllustratorController extends Controller {
                         {
                             association: 'reviews',
                             attributes: [],
+                            include: [
+                                {
+                                    association: 'consumer',
+                                    attributes: [],
+                                    required: true
+                                }
+                            ],
                             required: false
                         }
                     ],

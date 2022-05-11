@@ -44,7 +44,8 @@ class ReviewController extends Controller {
                     include: [
                         {
                             association: 'consumer',
-                            attributes: ['id', 'name', 'username', 'profilePicture']
+                            attributes: ['id', 'name', 'username', 'profilePicture'],
+                            required: true
                         }
                     ],
                     attributes: { exclude: 'consumerId' }

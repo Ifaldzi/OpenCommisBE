@@ -138,6 +138,13 @@ module.exports = (sequelize, DataTypes) => {
           {
               association: 'reviews',
               attributes: [],
+              include: [
+                {
+                  association: 'consumer',
+                  attributes: [],
+                  required: true
+                }
+              ],
               required: false
           },
           {
