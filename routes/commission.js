@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const { ROLE } = require('../config/constants')
 const commissionPostController = require('../controllers/CommissionPostController')
+const dashboardController = require('../controllers/DashboardController')
 const orderController = require('../controllers/OrderController')
 const reviewController = require('../controllers/ReviewController')
 const authMiddleware = require('../middlewares/AuthMiddleware')
@@ -9,6 +10,7 @@ const router = Router()
 
 
 router.get('/', commissionPostController.getAllCommissionPosts)
+router.get('/dashboard', authMiddleware.handle(), dashboardController.getAllCommissions)
 router.get('/search', commissionPostController.searchCommission)
 router.get('/:id', commissionPostController.getCommissionPost)
 router.post('/', 
@@ -36,12 +38,6 @@ router.get(
     authMiddleware.handle(ROLE.ILLUSTRATOR),
     orderController.getOrdersByCommissionId
 )
-
-// router.post(
-//     '/:id/reviews',
-//     authMiddleware.handle(ROLE.CONSUMER),
-//     reviewController.addReview
-// )
 
 router.get(
     '/:id/reviews',
