@@ -2,6 +2,7 @@ const PaymentService = require("../services/PaymentService");
 const { Controller } = require("./Controller");
 const { Illustrator, Withdrawal } = require('../models');
 const { BadRequestError } = require("../errors");
+const NotFoundError = require("../errors/NotFoundError");
 
 class WithdrawalController extends Controller {
     constructor() {
@@ -14,6 +15,9 @@ class WithdrawalController extends Controller {
         const { amount, destination, accountNumber, accountHolderName } = req.body
 
         const illustrator = await Illustrator.findOne({where: {id: illustratorId}})
+
+        if (!illustrator)
+            throw new NotFoundError('User not found, either id is wrong or the user has been deleted')
 
         if (amount > illustrator.balance)
             throw new BadRequestError('Insufficient balance')
@@ -47,7 +51,7 @@ class WithdrawalController extends Controller {
     disburseCallback = async (req, res, next) => {
         const { id, status, failure_code: failureCode } = req.body
 
-        const withdrawal = await Withdrawal.findOne({ where: { disburseRefId: id }, include: ['illustrator'] })
+        const withdrawal = await Withdrawal.findOne({ where: { disburseRefId: id }, include: [{ association: 'illustrator', paranoid: false }] })
 
         if (status == 'COMPLETED') {
             await withdrawal.illustrator.addBalance(-withdrawal.amount)

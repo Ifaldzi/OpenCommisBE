@@ -14,7 +14,7 @@ class ReviewController extends Controller {
 
         const order = await Order.findOne({ where: { id: orderId }, include: ['commission'] })
 
-        if (!order)
+        if (!order || !order.commission)
             throw new NotFoundError()
 
         try {
@@ -44,7 +44,8 @@ class ReviewController extends Controller {
                     include: [
                         {
                             association: 'consumer',
-                            attributes: ['id', 'name', 'username', 'profilePicture']
+                            attributes: ['id', 'name', 'username', 'profilePicture'],
+                            required: true
                         }
                     ],
                     attributes: { exclude: 'consumerId' }

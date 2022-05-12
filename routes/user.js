@@ -10,4 +10,16 @@ router.get(
     userController.getAuthenticatedUserProfile
 )
 
+router.get(
+    '/',
+    AuthMiddleware.handle(),
+    userController.getAllUsers
+)
+
+router.delete(
+    '/:role/:id',
+    AuthMiddleware.handle(),
+    userController.deleteUser
+)
+
 module.exports = { basePath: '/users', router}

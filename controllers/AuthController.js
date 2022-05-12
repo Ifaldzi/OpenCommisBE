@@ -102,11 +102,15 @@ class AuthController extends Controller {
 
         try {
             const decodedAuthData = jwt.verify(authToken, jwtConfig.secretKey)
-            const { role } = decodedAuthData
+            const { role, userId } = decodedAuthData
+
+            const user = await this.#findUser(role, { id: userId })
+            if (!user)
+                throw new Error("User not found")
 
             return this.response.sendSuccess(res, "Token valid", { tokenValid: true, role})
-        } catch (errors) {
-            return this.response.sendSuccess(res, "Token invalid", { tokenValid: false, role: null })
+        } catch (error) {
+            return this.response.sendSuccess(res, error.message || "Token invalid", { tokenValid: false, role: null })
         }
     }
 

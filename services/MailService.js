@@ -51,7 +51,7 @@ class MailService {
 
     async sendOrderPaidMail(orderData) {
         const { commission } = orderData
-        const illustrator = await commission.getIllustrator()
+        const illustrator = await commission.getIllustrator({paranoid: false})
 
         this.sendNotification(
             illustrator.email,

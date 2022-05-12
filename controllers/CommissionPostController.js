@@ -20,7 +20,8 @@ class CommissionPostController extends Controller {
         const { category } = req.query
 
         const where = {
-            status: 'OPEN'
+            status: 'OPEN',
+            '$illustrator.deleted_at$': null
         }
 
         if (category)
@@ -30,10 +31,20 @@ class CommissionPostController extends Controller {
             const commissionPosts = await CommissionPost.scope({method: ['pagination', limit, page]}).findAll({
                 where: where,
                 include: [
-                    {association: 'illustrator'},
+                    {
+                        association: 'illustrator',
+                        required: true
+                    },
                     {
                         association: 'reviews',
                         attributes: [],
+                        include: [
+                            {
+                                association: 'consumer',
+                                attributes: [],
+                                required: true
+                            }
+                        ],
                         required: false
                     },
                     {
@@ -56,7 +67,7 @@ class CommissionPostController extends Controller {
                 ]
             })
 
-            const count = await CommissionPost.count({where})
+            const count = await CommissionPost.count({ where, include: [{association: 'illustrator', required: true}] })
 
             const paginationData = this.#generatePaginationData(count, limit, page)
             
@@ -75,10 +86,14 @@ class CommissionPostController extends Controller {
 
         const commission = await CommissionPost.findOne({
             where: {
-                id
+                id,
             },
             include: [
-                'category', 'tags', 'illustrator', 
+                'category', 'tags', 
+                {
+                    association: 'illustrator',
+                    required: true
+                },
                 {
                     association: 'reviews',
                     required: false,
@@ -88,7 +103,8 @@ class CommissionPostController extends Controller {
                     include: [
                         {
                             association: 'consumer',
-                            attributes: ['id', 'name', 'username', 'profilePicture']
+                            attributes: ['id', 'name', 'username', 'profilePicture'],
+                            required: true
                         }
                     ]
                 },
@@ -147,7 +163,10 @@ class CommissionPostController extends Controller {
                 status: 'OPEN'
             },
             include: [
-                {association: 'illustrator'},
+                {
+                    association: 'illustrator',
+                    required: true
+                },
                 {
                     association: "tags",
                     attributes: [],
@@ -161,10 +180,19 @@ class CommissionPostController extends Controller {
                 [sequelize.literal('ordersCompleted'), 'DESC']
             ]
         })
-        console.log(commissions);
+        
         const dataCount = await CommissionPost
             .scope({method: ['search', wordsToFind]})
-            .count({ distinct: true, col: 'CommissionPost.id' })
+            .count({
+                include: [
+                    { 
+                        association: 'illustrator',
+                        attributes: [],
+                        required: true
+                    }
+                ],
+                distinct: true
+            })
 
         const paginationData = this.#generatePaginationData(dataCount, limit, page)
 

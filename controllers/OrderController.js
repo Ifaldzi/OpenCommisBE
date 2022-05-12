@@ -53,7 +53,7 @@ class OrderController extends Controller {
 
             await order.reload({include: ['detail', 'consumer', 'commission']})
 
-            const illustrator = await order.commission.getIllustrator()
+            const illustrator = await order.commission.getIllustrator({ paranoid: false })
 
             this.mailService.sendNotification(illustrator.email, 'Ada pesanan masuk, segera lakukan konfirmasi')
 
@@ -71,26 +71,36 @@ class OrderController extends Controller {
 
         const OrderWithPagination = Order.scope({method: ['pagination', limit, page]})
         let orders
+        const includeStatements = [
+            {
+                association: 'consumer',
+                paranoid: false
+            },
+            {
+                association: 'commission',
+                paranoid: false
+            }
+        ]
         switch (role) {
             case ROLE.CONSUMER:
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {consumerId: userId},
-                    include: ['consumer', 'commission'],
+                    include: includeStatements,
                     order: [['orderDate', 'DESC']],
-                    distinct: true
+                    distinct: true,
                 })
                 break;
             case ROLE.ILLUSTRATOR:
                 orders = await OrderWithPagination.findAndCountAll({
                     where: {'$commission.illustrator_id$': userId},
-                    include: ['consumer', 'commission'],
+                    include: includeStatements,
                     order: [['orderDate', 'DESC']],
                     distinct: true
                 })
                 break;
         }
 
-        const paginationData = super.generatePaginationData(orders, limit, page)
+        const paginationData = this.generatePaginationData(orders.count, limit, page)
 
         return this.response.sendSuccess(res, "Fetch data success", {pagination: paginationData, orders: orders.rows})
     }
@@ -108,11 +118,15 @@ class OrderController extends Controller {
                     association: 'illustrator',
                     attributes: {
                         exclude: ['balance']
-                    }
+                    },
+                    paranoid: false
                 }],
+                paranoid: false
             })
         } else {
-            includeStatement.push('consumer', 'commission')
+            includeStatement.push(
+                {association: 'consumer', paranoid: false}, 
+                { association: 'commission', paranoid: false })
         }
 
         const order = await Order.findOne({
@@ -172,11 +186,11 @@ class OrderController extends Controller {
                 [Sequelize.literal("status='FAILED',status='FINISHED',status='DENIED',status='SENT',status='NOT_PAID',status='ACCEPTED',status='ON_WORK',status='CREATED'"), 'ASC'],
                 ['orderDate', 'ASC'],
             ],
-            include: ['consumer'],
+            include: [{ association: 'consumer', paranoid: false }],
             distinct: true
         })
 
-        const paginationData = this.generatePaginationData(orders, limit, page)
+        const paginationData = this.generatePaginationData(orders.count, limit, page)
 
         return this.response.sendSuccess(res, "Fetch data success", { pagination: paginationData, orders: orders.rows})
     }
@@ -256,7 +270,7 @@ class OrderController extends Controller {
 
             await order.update({ status: STATUS.FINISHED })
 
-            const illustrator = await order.commission.getIllustrator()
+            const illustrator = await order.commission.getIllustrator({ paranoid: false })
 
             const serviceFee = order.grandTotal * (5 / 100)
             await illustrator.addBalance(order.grandTotal - serviceFee)

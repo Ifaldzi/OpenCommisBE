@@ -29,7 +29,8 @@ module.exports = (sequelize, DataTypes) => {
         ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
         password: undefined,
         activationToken: undefined,
-        profilePicture: profilePicture
+        profilePicture: profilePicture,
+        deletedAt: undefined
       }
     }
 
@@ -94,6 +95,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Illustrator',
     underscored: true,
+    paranoid: true
   },);
 
   Illustrator.beforeCreate(async (illustrator, options) => {
