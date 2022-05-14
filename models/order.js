@@ -22,7 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     static async findOneWhichBelongsToIllustrator(orderId, illustratorId) {
       const order = await this.findOne({ 
         where: { id: orderId },
-        include: ['detail', 'commission', { association: 'consumer', paranoid: false }]
+        include: [
+          'detail', 
+          {association: 'commission', paranoid: false},
+          {association: 'consumer', paranoid: false }
+        ]
       })
       if (!order)
         throw new NotFoundError()
@@ -36,7 +40,11 @@ module.exports = (sequelize, DataTypes) => {
     static async findOneWhichBelongsToConsumer(orderId, consumerId) {
       const order = await this.findOne({ 
         where: { id: orderId },
-        include: ['detail', 'commission', { association: 'consumer', paranoid: false}]
+        include: [
+          'detail', 
+          { association: 'commission', paranoid: false }, 
+          { association: 'consumer', paranoid: false }
+        ]
       })
       if (!order)
         throw new NotFoundError()
