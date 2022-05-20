@@ -84,7 +84,7 @@ module.exports = (sequelize, DataTypes) => {
     orderDate: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: new Date()
+      defaultValue: DataTypes.NOW
     },
     reviewed: {
       type: DataTypes.BOOLEAN,
