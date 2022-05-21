@@ -2,18 +2,19 @@ const { Controller } = require("./Controller");
 const { BadRequestError } = require("../errors");
 const jwt = require('jsonwebtoken')
 const { jwt: jwtConfig, verificationRedirect, path } = require('../config/config')
-const { Illustrator, Consumer } = require('../models')
+const { Illustrator, Consumer, Administrator } = require('../models')
 const { createJWT } = require('../services/jwtService');
 const { CustomError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const MailService = require("../services/MailService");
 const NotFoundError = require("../errors/NotFoundError");
 const { moveFileWithPath } = require("../services/fileService");
+const { ROLE } = require('../config/constants')
 
-const ROLE = {
-    ILLUSTRATOR: 'illustrator',
-    CONSUMER: 'consumer'
-}
+// const ROLE = {
+//     ILLUSTRATOR: 'illustrator',
+//     CONSUMER: 'consumer'
+// }
 
 class AuthController extends Controller {
     constructor() {
@@ -32,7 +33,10 @@ class AuthController extends Controller {
                 break;
             case ROLE.CONSUMER:
                 user = await Consumer.findOne({where: {email: loginData.email}})
-                break
+                break;
+            case ROLE.ADMIN:
+                user = await Administrator.findOne({ where: {username: loginData.username} })
+                break;
             default:
                 throw new CustomError("Role invalid", StatusCodes.BAD_REQUEST)
                 break;

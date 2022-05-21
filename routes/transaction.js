@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const { ROLE } = require("../config/constants");
 const dashboardController = require("../controllers/DashboardController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 
@@ -6,13 +7,13 @@ const router = Router()
 
 router.get(
     '/',
-    AuthMiddleware.handle(),
+    AuthMiddleware.handle(ROLE.ADMIN),
     dashboardController.getAllTransactions
 )
 
 router.get(
     '/summary',
-    AuthMiddleware.handle(),
+    AuthMiddleware.handle(ROLE.ADMIN),
     dashboardController.sumTotalTransactionEachMonth
 )
 
