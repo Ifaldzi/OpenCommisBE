@@ -175,6 +175,8 @@ class AuthController extends Controller {
             case ROLE.CONSUMER:
                 user = await Consumer.findOne({ where: whereStatement })
                 break;
+            case ROLE.ADMIN:
+                user = await Administrator.findOne({ where: whereStatement })
         }
 
         return user
