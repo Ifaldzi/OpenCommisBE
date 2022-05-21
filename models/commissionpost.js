@@ -64,7 +64,8 @@ module.exports = (sequelize, DataTypes) => {
           id: this.get().illustrator.id,
           name: this.get().illustrator.name,
           username: this.get().illustrator.username,
-          profilePicture: profilePicture
+          profilePicture: profilePicture,
+          available: this.illustrator.available
         } : undefined,
         overallRating: this.get('overallRating') !== undefined ? Number(this.get('overallRating')) : undefined,
         ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
