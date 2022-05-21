@@ -11,6 +11,12 @@ router.get(
 )
 
 router.get(
+    '/count',
+    AuthMiddleware.handle(),
+    userController.getCountOfUser
+)
+
+router.get(
     '/',
     AuthMiddleware.handle(),
     userController.getAllUsers
