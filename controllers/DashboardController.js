@@ -113,7 +113,9 @@ class DashboardController extends Controller {
                 [sequelize.fn('MONTHNAME', sequelize.col('order_date')), 'month'],
                 [sequelize.fn('SUM', sequelize.col('grand_total')), 'total']
             ],
-            group: [sequelize.fn('MONTH', sequelize.col('order_date'))]
+            group: [
+                sequelize.fn('MONTHNAME', sequelize.col('order_date'))
+            ]
         })
 
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
