@@ -10,7 +10,7 @@ const router = Router()
 
 
 router.get('/', commissionPostController.getAllCommissionPosts)
-router.get('/dashboard', authMiddleware.handle(), dashboardController.getAllCommissions)
+router.get('/dashboard', authMiddleware.handle(ROLE.ADMIN), dashboardController.getAllCommissions)
 router.get('/search', commissionPostController.searchCommission)
 router.get('/:id', commissionPostController.getCommissionPost)
 router.post('/', 

@@ -80,6 +80,13 @@ class UserController extends Controller {
             next(error)
         }
     }
+
+    getCountOfUser = async (req, res) => {
+        const illustratorCount = await this.userService.countUsers({ where: {role: ROLE.ILLUSTRATOR} })
+        const consumerCount = await this.userService.countUsers({ where: { role: ROLE.CONSUMER } })
+
+        return this.response.sendSuccess(res, 'Fetch data success', { illustrator: illustratorCount, consumer: consumerCount })
+    }
 }
 
 module.exports = new UserController()

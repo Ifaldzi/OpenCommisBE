@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const { ROLE } = require("../config/constants");
 const userController = require("../controllers/UserController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 
@@ -11,14 +12,20 @@ router.get(
 )
 
 router.get(
+    '/count',
+    AuthMiddleware.handle(ROLE.ADMIN),
+    userController.getCountOfUser
+)
+
+router.get(
     '/',
-    AuthMiddleware.handle(),
+    AuthMiddleware.handle(ROLE.ADMIN),
     userController.getAllUsers
 )
 
 router.delete(
     '/:role/:id',
-    AuthMiddleware.handle(),
+    AuthMiddleware.handle(ROLE.ADMIN),
     userController.deleteUser
 )
 

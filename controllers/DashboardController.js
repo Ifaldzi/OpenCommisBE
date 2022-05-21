@@ -1,5 +1,5 @@
 const { Controller } = require("./Controller");
-const { Order, CommissionPost } = require('../models')
+const { Order, CommissionPost, sequelize } = require('../models')
 
 const { pagination } = require('../config/config');
 const { Op } = require("sequelize");
@@ -103,6 +103,30 @@ class DashboardController extends Controller {
         const paginationData = this.generatePaginationData(commissions.count, limit, page)
 
         this.response.sendSuccess(res, 'Fetch data success', {pagination: paginationData, commissions: commissions.rows})
+    }
+
+    sumTotalTransactionEachMonth = async (req, res) => {
+        const year = Number(req.query.year) || new Date().getFullYear()
+        const transactionSummary = await Order.findAll({
+            where: sequelize.where(sequelize.fn('YEAR', sequelize.col('order_date')), year),
+            attributes: [
+                [sequelize.fn('MONTHNAME', sequelize.col('order_date')), 'month'],
+                [sequelize.fn('SUM', sequelize.col('grand_total')), 'total']
+            ],
+            group: [sequelize.fn('MONTH', sequelize.col('order_date'))]
+        })
+
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+        const mappedData = months.map(month => {
+            const monthlyData = transactionSummary.filter(item => {
+                return item.get('month') == month
+            })
+            
+            return monthlyData[0] || { month, total: 0 }
+        })
+
+        return this.response.sendSuccess(res, 'Fetch data success', mappedData)
     }
 }
 
