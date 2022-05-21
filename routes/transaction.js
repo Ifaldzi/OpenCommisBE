@@ -10,4 +10,10 @@ router.get(
     dashboardController.getAllTransactions
 )
 
+router.get(
+    '/summary',
+    AuthMiddleware.handle(),
+    dashboardController.sumTotalTransactionEachMonth
+)
+
 module.exports = { basePath: '/transactions', router}
