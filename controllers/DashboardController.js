@@ -95,12 +95,12 @@ class DashboardController extends Controller {
                                             },
                                         }
                                     ],
-                                    distinct: true,
                                     where,
-                                    order
+                                    order,
+                                    group: ['id']
                                 })
 
-        const paginationData = this.generatePaginationData(commissions.count, limit, page)
+        const paginationData = this.generatePaginationData(commissions.count.length, limit, page)
 
         this.response.sendSuccess(res, 'Fetch data success', {pagination: paginationData, commissions: commissions.rows})
     }
