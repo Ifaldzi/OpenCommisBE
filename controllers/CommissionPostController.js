@@ -5,7 +5,7 @@ const NotFoundError = require('../errors/NotFoundError')
 const { Op } = require('sequelize')
 const { StatusCodes } = require('http-status-codes')
 const { ForbiddenError } = require('../errors')
-const { STATUS } = require('../config/constants')
+const { STATUS, ROLE } = require('../config/constants')
 const fs = require('fs').promises
 
 class CommissionPostController extends Controller {
@@ -309,16 +309,15 @@ class CommissionPostController extends Controller {
 
     deleteCommissionPost = async (req, res, next) => {
         const { id: commisionId } = req.params
-        const { userId: illustratorId} = req.auth
+        const { userId: illustratorId, userRole: role } = req.auth
 
         try {
-            const commission = await CommissionPost.findOneByIdFromIllustrator(commisionId, illustratorId)
+            let commission
             
-            for (let i = 1; i <= 4; i++) {
-                const imagePath = commission['image_' + i]
-                if (imagePath)
-                    await fs.unlink('public/' + imagePath)
-            }
+            if (role === ROLE.ILLUSTRATOR)
+                commission = await CommissionPost.findOneByIdFromIllustrator(commisionId, illustratorId)
+            else
+                commission = await CommissionPost.findOne({ where: { id: commisionId } })
 
             await commission.destroy()
             return this.response.sendSuccess(res, 'Data deleted success', null)
