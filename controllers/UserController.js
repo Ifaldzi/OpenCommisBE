@@ -82,8 +82,8 @@ class UserController extends Controller {
     }
 
     getCountOfUser = async (req, res) => {
-        const illustratorCount = await this.userService.countUsers({ where: {role: ROLE.ILLUSTRATOR} })
-        const consumerCount = await this.userService.countUsers({ where: { role: ROLE.CONSUMER } })
+        const illustratorCount = await this.userService.countUsers({ where: {role: ROLE.ILLUSTRATOR, deletedAt: { 'is': null }} })
+        const consumerCount = await this.userService.countUsers({ where: { role: ROLE.CONSUMER, deletedAt: { 'is': null } } })
 
         return this.response.sendSuccess(res, 'Fetch data success', { illustrator: illustratorCount, consumer: consumerCount })
     }
