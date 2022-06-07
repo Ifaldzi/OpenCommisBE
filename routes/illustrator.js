@@ -46,4 +46,16 @@ router.get(
     illustratorController.getBalance
 )
 
+router.post(
+    '/verify-account',
+    AuthMiddleware.handle(ROLE.ILLUSTRATOR),
+    illustratorController.verifyAccount
+)
+
+router.get(
+    '/:illustratorId/verification-submission',
+    AuthMiddleware.handle([ROLE.ADMIN, ROLE.ILLUSTRATOR]),
+    illustratorController.getVerificationSubmissionDetail
+)
+
 module.exports = { basePath: '/illustrator', router}

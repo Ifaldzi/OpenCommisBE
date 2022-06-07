@@ -11,11 +11,6 @@ const NotFoundError = require("../errors/NotFoundError");
 const { moveFileWithPath } = require("../services/fileService");
 const { ROLE } = require('../config/constants')
 
-// const ROLE = {
-//     ILLUSTRATOR: 'illustrator',
-//     CONSUMER: 'consumer'
-// }
-
 class AuthController extends Controller {
     constructor() {
         super()

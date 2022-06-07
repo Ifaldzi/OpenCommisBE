@@ -25,7 +25,8 @@ module.exports = {
         commissionImage: 'img/commission/',
         artworkImage: 'img/artworks/',
         profilePicture: 'img/profile/',
-        referenceImage: 'img/order/ref/'
+        referenceImage: 'img/order/ref/',
+        verificationAsset: 'img/verification/'
     },
     mail: {
         host: process.env.MAIL_HOST,
