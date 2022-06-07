@@ -12,12 +12,13 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({CommissionPost, Portfolio, Artwork, Withdrawal}) {
+    static associate({CommissionPost, Portfolio, Artwork, Withdrawal, VerificationSubmission}) {
       // define association here
       this.hasMany(CommissionPost, {as: 'commissions'})
       this.hasOne(Portfolio, { as: 'portfolio', foreignKey: 'illustrator_id' })
       this.hasMany(Artwork, { as: 'artworks' })
       this.hasMany(Withdrawal, { as: 'withdrawals', foreignKey: 'illustratorId' })
+      this.hasOne(VerificationSubmission, { as: 'verificationSubmission', foreignKey: 'illustrator_id' })
     }
 
     toJSON() {
@@ -87,6 +88,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
     },
     emailVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    verified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false

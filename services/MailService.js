@@ -106,6 +106,16 @@ class MailService {
             `<h3>Veririkasi email anda untuk menggunakan aplikasi Open Commiss dengan mengklik tautan berikut</h3><p><a href="${verificationLink}">${verificationLink}</a></p>`
         )
     }
+
+    async sendAccountVerificationApproval(to, accepted) {
+        const body = accepted ? '<h3>Pengajuan verifikasi akun anda telah disetujui, anda akan melihat tanda centang biru setelah nama anda</h3>' : '<h3>Mohon maaf pengajuan verifikasi akun anda tidak disetujui, anda dapat kembali mengirimkan permohonan verifikasi akun di lain waktu</h3>'
+
+        await this.sendNotification(
+            to,
+            'Update Mengenai Pengajuan Verifikasi Akun',
+            body
+        )
+    }
 }
 
 module.exports = MailService

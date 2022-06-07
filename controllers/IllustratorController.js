@@ -1,10 +1,12 @@
 const { Controller } = require('./Controller')
-const { Illustrator, Artwork, Portfolio, sequelize } = require('../models')
+const { Illustrator, Artwork, Portfolio, sequelize, VerificationSubmission } = require('../models')
 const NotFoundError = require('../errors/NotFoundError')
-const { moveFile, deleteFile } = require('../services/fileService')
+const { moveFile, deleteFile, moveFileWithPath } = require('../services/fileService')
 const { path } = require('../config/config')
 const { StatusCodes } = require('http-status-codes')
 const { STATUS } = require('../config/constants')
+const { BadRequestError } = require('../errors')
+const MailService = require('../services/MailService')
 
 class IllustratorController extends Controller {
     constructor() {
@@ -144,6 +146,113 @@ class IllustratorController extends Controller {
         })
 
         return this.response.sendSuccess(res, 'Fetch data success', illustratorBalanceData)
+    }
+
+    verifyAccount = async (req, res, next) => {
+        const { nik, address, province, city, idCard, cardSelfie, background } = req.body
+        const { userId: illustratorId } = req.auth
+
+        try {
+            const idCardPath = await moveFileWithPath(idCard, path.verificationAsset)
+            const cardSelfiePath = await moveFileWithPath(cardSelfie, path.verificationAsset)
+    
+            const verificationSubmissionData = { 
+                NIK: nik, address, province, city, background,
+                idCardPhoto: idCardPath,
+                cardSelfiePhoto: cardSelfiePath,
+                submissionDate: new Date(),
+                illustratorId
+            }
+
+            const illustrator = await Illustrator.findOne({ where: { id: illustratorId } })
+    
+            let verificationSubmission = await illustrator.getVerificationSubmission()
+            
+            if (verificationSubmission) {
+                await deleteFile(verificationSubmission.idCardPhoto)
+                await deleteFile(verificationSubmission.cardSelfiePhoto)
+                
+                await verificationSubmission.update(verificationSubmissionData)
+            } else {
+                verificationSubmission = await illustrator.createVerificationSubmission(verificationSubmissionData)
+            }
+    
+            return this.response.sendSuccess(res, 'Data created successfully', verificationSubmission)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    approveVerificationSubmission = async (req, res, next) => {
+        const { accepted, illustrator_id: illustratorId } = req.body
+
+        const illustrator = await Illustrator.findOne({ 
+            where: { id: illustratorId },
+            include: [{
+                association: 'verificationSubmission',
+            }]
+        })
+
+        if (!illustrator)
+            throw new NotFoundError('Illustrator with given id not found')
+
+        const verificationSubmission = illustrator.verificationSubmission
+
+        if (!verificationSubmission.submissionDate)
+            throw new NotFoundError('This illustrator has not submitted the verification submission yet')
+
+        if (verificationSubmission.accepted)
+            throw new BadRequestError('This verification submission has been approved')
+
+        await verificationSubmission.update({
+            accepted,
+            verificationDate: new Date()
+        })
+
+        if (accepted) {
+            await illustrator.update({ verified: accepted })
+        }
+
+        const mailService = new MailService()
+        mailService.sendAccountVerificationApproval(illustrator.email, accepted)
+
+        return this.response.sendSuccess(res, 'Data saved successfully', verificationSubmission)
+    }
+
+    getIllustratorsWhoSubmittedAccountVerification = async (req, res) => {
+        const illustrators = await Illustrator.findAll({
+            include: [
+                {
+                    association: 'verificationSubmission',
+                    required: true,
+                    attributes: []
+                }
+            ],
+            order: [['verificationSubmission', 'submissionDate', 'DESC']]
+        })
+
+        return this.response.sendSuccess(res, 'Fetch data success', illustrators)
+    }
+
+    getVerificationSubmissionDetail = async (req, res) => {
+        const { illustratorId } = req.params
+
+        const verificationSubmission = await VerificationSubmission.findOne({
+            where: { illustratorId },
+            include: [
+                {
+                    association: 'illustrator'
+                }
+            ],
+            attributes: {
+                exclude: ['illustratorId']
+            }
+        })
+
+        if (!verificationSubmission)
+            throw new NotFoundError('Data not found')
+
+        return this.response.sendSuccess(res, 'Fetch data success', verificationSubmission)
     }
 }
 
