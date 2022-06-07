@@ -1,7 +1,7 @@
 const { Controller } = require('./Controller')
 const { Illustrator, Artwork, Portfolio, sequelize, VerificationSubmission } = require('../models')
 const NotFoundError = require('../errors/NotFoundError')
-const { moveFile, deleteFile, moveFileWithPath } = require('../services/fileService')
+const { moveFile, deleteFile, moveFileFromTemp } = require('../services/fileService')
 const { path } = require('../config/config')
 const { StatusCodes } = require('http-status-codes')
 const { STATUS } = require('../config/constants')
@@ -153,8 +153,8 @@ class IllustratorController extends Controller {
         const { userId: illustratorId } = req.auth
 
         try {
-            const idCardPath = await moveFileWithPath(idCard, path.verificationAsset)
-            const cardSelfiePath = await moveFileWithPath(cardSelfie, path.verificationAsset)
+            const idCardPath = await moveFileFromTemp(idCard, path.verificationAsset)
+            const cardSelfiePath = await moveFileFromTemp(cardSelfie, path.verificationAsset)
     
             const verificationSubmissionData = { 
                 NIK: nik, address, province, city, background,

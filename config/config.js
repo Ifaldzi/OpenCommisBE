@@ -26,7 +26,8 @@ module.exports = {
         artworkImage: 'img/artworks/',
         profilePicture: 'img/profile/',
         referenceImage: 'img/order/ref/',
-        verificationAsset: 'img/verification/'
+        verificationAsset: 'img/verification/',
+        temp: '../temp/'
     },
     mail: {
         host: process.env.MAIL_HOST,

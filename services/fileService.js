@@ -1,3 +1,5 @@
+const { path } = require('../config/config')
+
 const fs = require('fs').promises
 
 const moveFile = async (file, path) => {
@@ -17,8 +19,17 @@ const moveFileWithPath = async (from, to) => {
     return newPath
 }
 
+const moveFileFromTemp = async (fileName, to) => {
+    const oldPath = path.temp + fileName
+    const newPath = to + fileName
+
+    await fs.rename(oldPath, `public/${newPath}`)
+
+    return newPath
+}
+
 const deleteFile = async (path) => {
     await fs.unlink('public/' + path)
 }
 
-module.exports = {moveFile, deleteFile, moveFileWithPath}
+module.exports = {moveFile, deleteFile, moveFileWithPath, moveFileFromTemp}

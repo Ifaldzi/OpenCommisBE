@@ -12,7 +12,7 @@ class UploadController extends Controller {
         if (!file)
             throw new BadRequestError('File not provided')
 
-        return this.response.sendSuccess(res, 'File uploaded', { path: file.path })
+        return this.response.sendSuccess(res, 'File uploaded', { fileName: file.filename })
     }
 }
 
