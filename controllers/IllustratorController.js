@@ -187,16 +187,13 @@ class IllustratorController extends Controller {
         const { accepted, illustrator_id: illustratorId } = req.body
 
         const illustrator = await Illustrator.findOne({ 
-            where: { id: illustratorId },
-            include: [{
-                association: 'verificationSubmission',
-            }]
+            where: { id: illustratorId }
         })
 
         if (!illustrator)
             throw new NotFoundError('Illustrator with given id not found')
 
-        const verificationSubmission = illustrator.verificationSubmission
+        const verificationSubmission = await illustrator.getVerificationSubmission()
 
         if (!verificationSubmission.submissionDate)
             throw new NotFoundError('This illustrator has not submitted the verification submission yet')
