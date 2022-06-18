@@ -71,6 +71,22 @@ class ReviewController extends Controller {
             next(error)
         }
     }
+
+    hideReview = async (req, res, next) => {
+        const { id: reviewId } = req.params
+
+        const review = await Review.findOne({ where: { id: reviewId } })
+
+        if (!review)
+            throw new NotFoundError()
+
+        try {
+            await review.update({ 'visible': false });
+            this.response.sendSuccess(res, 'Review hide', null)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
 
 module.exports = new ReviewController()

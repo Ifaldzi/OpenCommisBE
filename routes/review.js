@@ -11,4 +11,10 @@ router.delete(
     reviewController.deleteReview
 )
 
+router.post(
+    '/:id/hide',
+    AuthMiddleware.handle(ROLE.ADMIN),
+    reviewController.hideReview
+)
+
 module.exports = { basePath: '/reviews', router}
