@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       return {
         ...this.get(),
         ordersCompleted: this.get('ordersCompleted') !== undefined ? Number(this.get('ordersCompleted')) : undefined,
+        overallRating: Number(this.get('overallRating')) || undefined,
         password: undefined,
         activationToken: undefined,
         profilePicture: profilePicture,

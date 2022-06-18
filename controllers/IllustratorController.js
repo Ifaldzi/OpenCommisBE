@@ -16,8 +16,6 @@ class IllustratorController extends Controller {
     getIllustratorPortfolio = async (req, res) => {
         const illustratorId = req.params.illustratorId || req.auth.userId
 
-        console.log(illustratorId);
-
         const portfolio = await Illustrator.findOne({
             where: {
                 id: illustratorId
@@ -58,7 +56,14 @@ class IllustratorController extends Controller {
                             c.illustrator_id = Illustrator.id AND
                             orders.status = 'FINISHED'
                     )`), 
-                    'ordersCompleted']
+                    'ordersCompleted'],
+                    [sequelize.literal(`(
+                        SELECT AVG(reviews.rating)
+                        FROM reviews
+                        JOIN commission_posts as c ON c.id = reviews.commission_post_id
+                        WHERE c.illustrator_id=Illustrator.id
+                        GROUP By c.illustrator_id
+                    )`), 'overallRating']
                 ]
             },
             group: ['artworks.id', 'commissions.id', 'bio', 'instagram_acc', 'twitter_acc', 'facebook_acc']
